@@ -494,6 +494,42 @@ function exitAdmin(){
   showToast('&#10003; Back to scoreboard','ok');
 }
 
+// ── CONNECTION TEST ──
+function testConnection(){
+  setStatus('<span class="saving-dot"></span> Testing...','');
+  showToast('Testing connection...','');
+  const url=SCRIPT_URL+'?type=scoreboard';
+  fetch(url,{redirect:'follow',mode:'cors',credentials:'omit'})
+    .then(r=>r.json())
+    .then(json=>{
+      if(json.status==='ok'){
+        showToast('&#10003; Connected! Data received OK','ok');
+        setStatus('&#10003; Connection OK','ok');
+      } else {
+        showToast('&#9888; Script error: '+json.message,'err');
+        setStatus('&#9888; Script error','err');
+      }
+    })
+    .catch(err=>{
+      showToast('&#9888; CORS/Network fail — trying XHR...','err');
+      const xhr=new XMLHttpRequest();
+      xhr.open('GET',url,true);
+      xhr.onload=()=>{
+        try{
+          const j=JSON.parse(xhr.responseText);
+          if(j.status==='ok'){showToast('&#10003; XHR Connected OK','ok');setStatus('&#10003; XHR OK','ok');}
+          else{showToast('&#9888; Script error: '+j.message,'err');setStatus('&#9888; Script error','err');}
+        }catch{showToast('&#9888; Invalid response — redeploy Apps Script','err');setStatus('&#9888; Bad response','err');}
+      };
+      xhr.onerror=()=>{
+        showToast('&#9888; Cannot reach script — check URL & deployment','err');
+        setStatus('&#9888; Unreachable','err');
+        alert('CONNECTION FAILED\n\nCheck:\n1. SCRIPT_URL in scoreboard.html is correct\n2. Apps Script is deployed with \'Anyone\' access\n3. You redeployed after last code change\n\nCurrent URL:\n'+SCRIPT_URL);
+      };
+      xhr.send();
+    });
+}
+
 // ── FETCH ──
 const FETCH_OPTS={redirect:'follow',mode:'cors',credentials:'omit'};
 function fetchScores(){
@@ -788,17 +824,37 @@ function buildAdminPanel(ev,cat,evData,isRace){
 }
 
 // ── SET RESULT ──
-// ── Robust fetch for Google Apps Script (handles redirects + CORS) ──
-function gasFetch(url){
-  return fetch(url,{redirect:'follow',mode:'cors',credentials:'omit'})
-    .then(r=>{
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .catch(()=>
-      // fallback: no-cors fire-and-forget, assume success
-      fetch(url,{redirect:'follow',mode:'no-cors'}).then(()=>({status:'ok'}))
-    );
+// ── Robust fetch for Google Apps Script ──
+function gasFetch(url, retries=3){
+  // Try with image trick — most reliable for GAS
+  return new Promise((resolve)=>{
+    // First try proper fetch with cors
+    fetch(url,{redirect:'follow',mode:'cors',credentials:'omit'})
+      .then(r=>r.json())
+      .then(json=>resolve(json))
+      .catch(()=>{
+        // Fallback 1: no-cors (can't read response but write goes through)
+        fetch(url,{redirect:'follow',mode:'no-cors'})
+          .then(()=>resolve({status:'ok'}))
+          .catch(()=>{
+            // Fallback 2: XMLHttpRequest (bypasses some CORS issues)
+            const xhr=new XMLHttpRequest();
+            xhr.open('GET',url,true);
+            xhr.onload=()=>{
+              try{resolve(JSON.parse(xhr.responseText));}
+              catch{resolve({status:'ok'});}
+            };
+            xhr.onerror=()=>{
+              if(retries>0){
+                setTimeout(()=>gasFetch(url,retries-1).then(resolve),1500);
+              } else {
+                resolve({status:'error',message:'Network error — check SCRIPT_URL and redeploy'});
+              }
+            };
+            xhr.send();
+          });
+      });
+  });
 }
 
 function setResult(ev,cat,team,round,result,mid){
