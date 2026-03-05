@@ -495,17 +495,18 @@ function exitAdmin(){
 }
 
 // ── FETCH ──
+const FETCH_OPTS={redirect:'follow',mode:'cors',credentials:'omit'};
 function fetchScores(){
-  fetch(SCRIPT_URL+'?type=scoreboard').then(r=>r.json()).then(json=>{
+  fetch(SCRIPT_URL+'?type=scoreboard',FETCH_OPTS).then(r=>r.json()).then(json=>{
     if(json.status==='ok'){allData=json.data;document.getElementById('lastUpdated').textContent=json.updated;renderSb();}
   }).catch(()=>{});
 }
 function loadAdminData(){
   setStatus('<span class="saving-dot"></span> Loading...','');
-  fetch(SCRIPT_URL+'?type=admin_get').then(r=>r.json()).then(json=>{
+  fetch(SCRIPT_URL+'?type=admin_get',FETCH_OPTS).then(r=>r.json()).then(json=>{
     if(json.status==='ok'){allData=json.data;document.getElementById('adminLoadedAt').textContent=new Date().toLocaleTimeString('en-IN');renderAdmin();setStatus('&#10003; Loaded','ok');}
     else setStatus('&#9888; '+json.message,'err');
-  }).catch(()=>setStatus('&#9888; Cannot connect','err'));
+  }).catch(()=>setStatus('&#9888; Cannot connect — check SCRIPT_URL','err'));
 }
 
 // ── SCOREBOARD RENDER ──
@@ -787,12 +788,25 @@ function buildAdminPanel(ev,cat,evData,isRace){
 }
 
 // ── SET RESULT ──
+// ── Robust fetch for Google Apps Script (handles redirects + CORS) ──
+function gasFetch(url){
+  return fetch(url,{redirect:'follow',mode:'cors',credentials:'omit'})
+    .then(r=>{
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .catch(()=>
+      // fallback: no-cors fire-and-forget, assume success
+      fetch(url,{redirect:'follow',mode:'no-cors'}).then(()=>({status:'ok'}))
+    );
+}
+
 function setResult(ev,cat,team,round,result,mid){
   setStatus('<span class="saving-dot"></span> Saving...','');
   const url=SCRIPT_URL+'?type=admin_set&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(team)+'&round='+encodeURIComponent(round)+'&result='+encodeURIComponent(result);
-  fetch(url).then(r=>r.json()).then(json=>{
-    if(json.status==='ok'){
-      showToast('&#10003; '+team+' → '+result,'ok');setStatus('&#10003; Saved','ok');
+  gasFetch(url).then(json=>{
+    if(!json||json.status==='ok'){
+      showToast('&#10003; '+team+' \u2192 '+result,'ok');setStatus('&#10003; Saved','ok');
       // update local + auto-set opponent
       const evData=allData[ev]&&allData[ev][cat];
       if(evData){
@@ -803,17 +817,17 @@ function setResult(ev,cat,team,round,result,mid){
             const opp=result==='WIN'?'LOSE':'WIN';
             t.result=opp;
             evData.teams.forEach(tt=>{ if(tt.name===t.name) tt[round+'_result']=opp; });
-            fetch(SCRIPT_URL+'?type=admin_set&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(t.name)+'&round='+encodeURIComponent(round)+'&result='+encodeURIComponent(opp)).catch(()=>{});
+            gasFetch(SCRIPT_URL+'?type=admin_set&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(t.name)+'&round='+encodeURIComponent(round)+'&result='+encodeURIComponent(opp)).catch(()=>{});
           }
         });
         rebuildMatches(ev,cat);renderAdmin();
       }
-    } else {showToast('&#9888; '+json.message,'err');setStatus('&#9888; '+json.message,'err');}
-  }).catch(()=>{showToast('&#9888; Network error','err');setStatus('&#9888; Network error','err');});
+    } else {showToast('&#9888; '+(json.message||'Error'),'err');setStatus('&#9888; '+(json.message||'Error'),'err');}
+  }).catch(()=>{showToast('&#9888; Network error — check URL','err');setStatus('&#9888; Network error','err');});
 }
 
 function saveTime(ev,cat,team,time){
-  fetch(SCRIPT_URL+'?type=admin_set_time&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(team)+'&time='+encodeURIComponent(time)).catch(()=>{});
+  gasFetch(SCRIPT_URL+'?type=admin_set_time&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(team)+'&time='+encodeURIComponent(time)).catch(()=>{});
 }
 
 function rebuildMatches(ev,cat){
