@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#050a0f">
-<title>KPL LIVE SCORE 2026 — Live Scoreboard</title>
+<title>KOS TECHTRONICA 2026 — Live Scoreboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 /* ════════════════════════════════════════
@@ -16,7 +16,7 @@
   --red:#ff4455;  --orange:#ffaa00; --purple:#cc00ff; --pink:#ff00cc;
   --bg:#050a0f;   --panel:#0d1e2e;  --panel2:#091624;
   --border:rgba(0,245,255,.15); --border2:rgba(255,255,255,.05);
-  --text:#c8e8ff; --dim:rgba(200,232,255,.42);
+  --text:#c8e8ff; --dim:rgba(200,232,255,.72);
   --fm:'Share Tech Mono',monospace; --fd:'Orbitron',sans-serif;
   /* layout */
   --nav-h:52px; --mobnav-h:58px;
@@ -489,7 +489,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 ════════════════════════════════════════ -->
 <div id="sbMode">
   <div class="hero">
-    <div class="hero-eye">&#9670; KOS PREMIER LEAGUE 2026 &#9670;</div>
+    <div class="hero-eye">&#9670; KOS TECHTRONICA 2026 &#9670;</div>
     <h1 class="hero-h1">LIVE <span>SCOREBOARD</span></h1>
     <div class="hero-meta">
       <span>&#128197;&nbsp;Updated:&nbsp;<b id="lastUp">—</b></span>
@@ -700,7 +700,13 @@ function buildBrk(d){
   active.forEach(r=>{
     const cls=RCLS[r]||'';
     h+=`<div class="bcol"><div class="bchdr ${cls}">${RLABEL[r]||r}</div>`;
-    Object.entries(matches[r]).forEach(([mid,ts])=>{
+    // Sort match IDs numerically: QF1,QF2,QF3 not QF1,QF10,QF2
+    const sortedMids=Object.keys(matches[r]).sort((a,b)=>{
+      const na=parseInt(a.replace(/[^\d]/g,''))||0;
+      const nb=parseInt(b.replace(/[^\d]/g,''))||0;
+      return na-nb;
+    });
+    sortedMids.forEach(mid=>{const ts=matches[r][mid];
       const t1=ts[0]||{name:'TBD',result:''},t2=ts[1]||{name:'TBD',result:''};
       h+=`<div class="mc"><div class="mcid">${mid}</div>`;
       [t1,t2].forEach(t=>{const w=t.result==='WIN',l=t.result==='LOSE',by=t.result==='BYE';h+=`<div class="mct${w?' win':l?' lose':by?' bye':''}"><span class="mcn${t.name==='TBD'?' tbd':''}">${t.name}</span>${t.result?`<span class="mcr ${w?'win':l?'lose':by?'bye':''}">${t.result}</span>`:''}</div>`;});
@@ -737,7 +743,13 @@ function renderAdmin(){
     const mg=((d.matches||{})[r])||{},mids=Object.keys(mg);if(!mids.length)return;
     const cls=RCLS[r]||'',done=mids.filter(m=>mg[m].some(t=>t.result==='WIN'||t.result==='BYE')).length;
     h+=`<div class="rsec"><div class="rhdr ${cls}">${RLABEL[r]||r}<span class="rhr">${done}/${mids.length} done</span></div><div class="mgrid">`;
-    mids.forEach(mid=>{
+    // Sort match IDs numerically
+    const sortedMids2=mids.sort((a,b)=>{
+      const na=parseInt(a.replace(/[^\d]/g,''))||0;
+      const nb=parseInt(b.replace(/[^\d]/g,''))||0;
+      return na-nb;
+    });
+    sortedMids2.forEach(mid=>{
       const ts=mg[mid],isDone=ts.some(t=>t.result==='WIN'||t.result==='BYE');
       h+=`<div class="amc${isDone?' done':''}"><div class="amid">${mid}${isDone?' <span class="dtag">&#10003;</span>':''}</div>`;
       ts.forEach(t=>{const w=t.result==='WIN',l=t.result==='LOSE',b=t.result==='BYE';h+=`<div class="amr${w?' won':l?' lost':b?' bye':''}"><span class="amn">${t.name}</span><div class="btns"><button class="bw${w?' on':''}" onclick="setRes('${esc(ev)}','${cat}','${esc(t.name)}','${r}','WIN','${mid}')" ${isDone?'disabled':''}>WIN</button><button class="bl${l?' on':''}" onclick="setRes('${esc(ev)}','${cat}','${esc(t.name)}','${r}','LOSE','${mid}')" ${isDone?'disabled':''}>LOSE</button><button class="bb${b?' on':''}" onclick="setRes('${esc(ev)}','${cat}','${esc(t.name)}','${r}','BYE','${mid}')" ${isDone?'disabled':''}>BYE</button></div></div>`;});
