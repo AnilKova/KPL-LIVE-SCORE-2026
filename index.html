@@ -2,987 +2,788 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KOS TECHTRONICA 2026 — Live Scoreboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050a0f">
+<title>KOS PREMIER LEAGUE 2026 — Live Scoreboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-:root{--neon:#00f5ff;--acid:#aaff00;--dark:#050a0f;--panel:#0d1e2e;--text:#c8e8ff;--gold:#ffcc00;--silver:#b8c8d8;--win:#aaff00;--lose:#ff4455;--orange:#ff9900;--glow:0 0 20px rgba(0,245,255,0.5)}
-*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
-body{background:var(--dark);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9997}
-body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:0.85rem 2.5rem;background:rgba(5,10,15,0.97);backdrop-filter:blur(14px);border-bottom:1px solid rgba(0,245,255,0.2)}
-.logo{font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;color:var(--neon);text-shadow:var(--glow);letter-spacing:0.15em;display:flex;align-items:center;gap:0.55rem;text-decoration:none}
-.logo span{color:var(--acid)}.logo img{height:32px;width:32px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 0 7px rgba(0,245,255,0.55))}
-.nav-right{display:flex;align-items:center;gap:0.7rem}
-.live-badge{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--acid);letter-spacing:0.15em;display:flex;align-items:center;gap:0.4rem;border:1px solid rgba(170,255,0,0.3);padding:0.3rem 0.7rem;background:rgba(170,255,0,0.06)}
-.live-badge::before,.admin-live-badge::before{content:'';width:7px;height:7px;border-radius:50%;animation:blink 1.2s ease-in-out infinite;flex-shrink:0}
-.live-badge::before{background:var(--acid);box-shadow:0 0 8px rgba(170,255,0,0.9)}
-.admin-live-badge{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--orange);letter-spacing:0.15em;display:none;align-items:center;gap:0.4rem;border:1px solid rgba(255,153,0,0.4);padding:0.3rem 0.7rem;background:rgba(255,153,0,0.08)}
-.admin-live-badge::before{background:var(--orange);box-shadow:0 0 8px rgba(255,153,0,0.9)}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-.nav-back{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(200,232,255,0.45);text-decoration:none;letter-spacing:0.08em;display:flex;align-items:center;gap:0.35rem;transition:color 0.2s;border:1px solid rgba(0,245,255,0.18);padding:0.35rem 0.8rem}
-.nav-back:hover{color:var(--neon);border-color:var(--neon)}
-.btn-admin{font-family:'Orbitron',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.12em;color:var(--orange);border:1px solid rgba(255,153,0,0.4);background:rgba(255,153,0,0.07);padding:0.38rem 0.9rem;cursor:pointer;transition:all 0.2s}
-.btn-admin:hover{background:rgba(255,153,0,0.15);border-color:var(--orange)}
-.btn-exit-admin{font-family:'Orbitron',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.12em;color:var(--lose);border:1px solid rgba(255,68,85,0.4);background:rgba(255,68,85,0.07);padding:0.38rem 0.9rem;cursor:pointer;transition:all 0.2s;display:none}
-.btn-exit-admin:hover{background:rgba(255,68,85,0.15);border-color:var(--lose)}
-
-/* PASSWORD */
-.pw-overlay{position:fixed;inset:0;z-index:9999;background:rgba(5,10,15,0.97);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center}
-.pw-overlay.show{display:flex}
-.pw-box{position:relative;background:var(--panel);border:1px solid rgba(0,245,255,0.25);padding:3rem 2.5rem;text-align:center;width:90%;max-width:380px;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));animation:pwIn 0.3s ease}
-@keyframes pwIn{from{transform:scale(0.95);opacity:0}to{transform:scale(1);opacity:1}}
-.pw-box::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
-.pw-title{font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:900;color:#fff;letter-spacing:0.15em;margin-bottom:0.3rem}
-.pw-sub{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(200,232,255,0.3);letter-spacing:0.18em;margin-bottom:2rem}
-.pw-label{font-family:'Orbitron',monospace;font-size:0.6rem;color:rgba(200,232,255,0.5);letter-spacing:0.18em;margin-bottom:0.6rem;display:block}
-.pw-input{font-family:'Share Tech Mono',monospace;font-size:1.3rem;background:rgba(0,245,255,0.07);border:1px solid rgba(0,245,255,0.3);color:#fff;padding:0.75rem 1rem;width:100%;outline:none;text-align:center;letter-spacing:0.4em;transition:border-color 0.2s}
-.pw-input:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(0,245,255,0.1)}
-.pw-input.shake{animation:shake 0.4s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-.pw-btn{margin-top:1rem;width:100%;background:var(--neon);color:var(--dark);font-family:'Orbitron',monospace;font-size:0.8rem;font-weight:900;letter-spacing:0.18em;padding:0.9rem;border:none;cursor:pointer;clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);transition:all 0.2s}
-.pw-btn:hover{background:var(--acid)}
-.pw-cancel{margin-top:0.7rem;width:100%;background:transparent;color:rgba(200,232,255,0.3);font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;padding:0.5rem;border:1px solid rgba(200,232,255,0.1);cursor:pointer;transition:all 0.2s}
-.pw-cancel:hover{color:rgba(200,232,255,0.6)}
-.pw-err{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--lose);letter-spacing:0.1em;margin-top:0.7rem;min-height:1rem}
-.pw-hint{font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:rgba(200,232,255,0.15);letter-spacing:0.1em;margin-top:1.2rem}
-
-/* MODES */
-#scoreboardMode{display:block}#adminMode{display:none}
-
-/* PAGE HEADER */
-.page-header{position:relative;z-index:1;padding:7.5rem 5% 1.5rem;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(0,245,255,0.08) 0%,transparent 65%)}
-.section-tag{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--neon);letter-spacing:0.3em;margin-bottom:0.5rem;display:block}
-.page-title{font-family:'Orbitron',monospace;font-size:clamp(1.5rem,4.5vw,2.8rem);font-weight:900;color:#fff;text-shadow:0 0 30px rgba(0,245,255,0.3)}
-.page-title em{font-style:normal;color:var(--neon)}
-.status-row{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:0.8rem;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(200,232,255,0.4);letter-spacing:0.1em}
-#lastUpdated{color:var(--neon)}#nextRefresh{color:var(--acid)}
-
-/* EVENT TABS (level 1) */
-.tabs-wrap{position:sticky;top:62px;z-index:900;background:rgba(5,10,15,0.97);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,245,255,0.12)}
-.event-tabs{display:flex;overflow-x:auto;scrollbar-width:none;max-width:1400px;margin:0 auto;padding:0 2%}
-.event-tabs::-webkit-scrollbar{display:none}
-.etab{background:none;border:none;border-bottom:2px solid transparent;font-family:'Orbitron',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;color:rgba(200,232,255,0.35);padding:0.8rem 1.1rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;margin-bottom:-1px;display:flex;flex-direction:column;align-items:center;gap:0.2rem}
-.etab:hover{color:rgba(200,232,255,0.7)}.etab.active{color:var(--neon);border-bottom-color:var(--neon)}
-.etab-icon{font-size:1rem}
-
-/* CATEGORY SUB-TABS (level 2) */
-.cat-tabs-wrap{background:rgba(5,10,15,0.85);border-bottom:1px solid rgba(0,245,255,0.07);position:sticky;top:111px;z-index:850}
-.cat-tabs{display:flex;justify-content:center;gap:0;max-width:1400px;margin:0 auto;padding:0 2%}
-.ctab{background:none;border:none;border-bottom:2px solid transparent;font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;color:rgba(200,232,255,0.35);padding:0.6rem 2rem;cursor:pointer;transition:all 0.2s;margin-bottom:-1px;white-space:nowrap}
-.ctab:hover{color:rgba(200,232,255,0.65)}
-.ctab.active{color:var(--acid);border-bottom-color:var(--acid);background:rgba(170,255,0,0.04)}
-.ctab-day{font-size:0.52rem;color:rgba(200,232,255,0.25);display:block;margin-top:0.1rem;letter-spacing:0.1em}
-
-/* VIEW BUTTONS */
-.view-bar{display:flex;justify-content:center;gap:0.5rem;padding:1rem 0 0.7rem;max-width:1400px;margin:0 auto}
-.vbtn{background:none;border:1px solid rgba(0,245,255,0.2);font-family:'Orbitron',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.12em;color:rgba(200,232,255,0.38);padding:0.5rem 1.3rem;cursor:pointer;transition:all 0.2s;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
-.vbtn:hover{color:var(--neon);border-color:rgba(0,245,255,0.5)}.vbtn.active{background:rgba(0,245,255,0.1);border-color:var(--neon);color:var(--neon)}
-
-/* MAIN CONTENT */
-.sb-main{position:relative;z-index:1;padding:0 5% 5rem;max-width:1400px;margin:0 auto}
-.event-panel{display:none}.event-panel.active{display:block}
-.cat-panel{display:none}.cat-panel.active{display:block}
-.view-block{display:none}.view-block.active{display:block;animation:fadeIn 0.3s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* QUALIFIER TABLE (Race) */
-.qual-wrap{margin-bottom:1.5rem}
-.block-hdr{display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1.2rem;border-left:3px solid var(--neon);background:rgba(0,245,255,0.04);margin-bottom:0}
-.block-hdr.race-hdr{border-left-color:var(--acid)}
-.block-hdr-title{font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:900;letter-spacing:0.16em;color:#fff}
-.block-hdr-count{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(200,232,255,0.3);letter-spacing:0.1em;margin-left:auto}
-.dtable{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid rgba(0,245,255,0.1)}
-.dtable thead tr{background:rgba(0,245,255,0.05)}
-.dtable th{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(200,232,255,0.42);letter-spacing:0.18em;padding:0.65rem 1rem;text-align:left;border-bottom:1px solid rgba(0,245,255,0.1);white-space:nowrap}
-.dtable th.c,.dtable td.c{text-align:center}
-.dtable tbody tr{border-bottom:1px solid rgba(0,245,255,0.05);transition:background 0.15s}
-.dtable tbody tr:hover{background:rgba(0,245,255,0.04)}
-.dtable tbody tr.qual-row{background:rgba(170,255,0,0.05)}
-.dtable tbody tr.qual-row:hover{background:rgba(170,255,0,0.09)}
-.dtable td{padding:0.75rem 1rem;vertical-align:middle}
-.t-name{font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:700;color:#fff}
-.rank-num{font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:rgba(200,232,255,0.4);text-align:center}
-.rank-num.top{color:var(--acid)}
-.t-time{font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:var(--acid);letter-spacing:0.06em}
-.t-time-na{color:rgba(200,232,255,0.18);font-size:0.7rem}
-.qual-badge{font-family:'Share Tech Mono',monospace;font-size:0.58rem;padding:0.18rem 0.6rem;border:1px solid;white-space:nowrap;letter-spacing:0.07em;display:inline-block}
-.qb-yes{color:var(--acid);border-color:rgba(170,255,0,0.5);background:rgba(170,255,0,0.1)}
-.qb-no{color:rgba(200,232,255,0.2);border-color:rgba(200,232,255,0.08)}
-.qual-divider td{padding:0.3rem 1rem;background:rgba(170,255,0,0.08);font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--acid);letter-spacing:0.15em;border-top:1px dashed rgba(170,255,0,0.3);border-bottom:1px dashed rgba(170,255,0,0.3)}
-
-/* BRACKET */
-.bracket-outer{overflow-x:auto;padding:1.5rem 0 3rem;-webkit-overflow-scrolling:touch}
-.bracket-tree{display:flex;align-items:stretch;gap:0;min-width:fit-content;padding:0 1rem}
-.bc{display:flex;flex-direction:column;justify-content:space-around;min-width:220px;flex-shrink:0}
-.bc-hdr{font-family:'Orbitron',monospace;font-size:0.63rem;font-weight:700;letter-spacing:0.14em;text-align:center;padding:0.5rem;margin-bottom:0.8rem;border-bottom:1px solid rgba(0,245,255,0.12)}
-.bc-hdr.r1{color:#00ccff}.bc-hdr.r2{color:#cc00ff}.bc-hdr.qf{color:#ffaa00}.bc-hdr.sf{color:#ff6600}.bc-hdr.fn{color:var(--acid)}
-.bc-matches{display:flex;flex-direction:column;justify-content:space-around;flex:1;gap:0;padding:0 0.5rem}
-.bm{background:var(--panel);border:1px solid rgba(0,245,255,0.14);margin:8px 0;transition:border-color 0.2s}
-.bm:hover{border-color:rgba(0,245,255,0.3)}
-.bm-id{font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:rgba(200,232,255,0.22);letter-spacing:0.1em;padding:0.22rem 0.6rem;background:rgba(0,245,255,0.03);border-bottom:1px solid rgba(0,245,255,0.07)}
-.bt{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0.7rem;gap:0.5rem;border-bottom:1px solid rgba(0,245,255,0.06);min-height:38px;transition:background 0.2s}
-.bt:last-of-type{border-bottom:none}
-.bt.win{background:rgba(170,255,0,0.07)}.bt.lose{background:rgba(255,60,60,0.05);opacity:0.55}.bt.tbd{background:transparent}
-.bt-name{font-family:'Rajdhani',sans-serif;font-size:0.88rem;font-weight:700;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
-.bt.win .bt-name{color:var(--acid)}.bt.lose .bt-name{color:rgba(200,232,255,0.3);text-decoration:line-through;text-decoration-color:rgba(255,80,80,0.4)}.bt.tbd .bt-name{color:rgba(200,232,255,0.35);font-style:italic}
-.bt-badge{font-family:'Share Tech Mono',monospace;font-size:0.58rem;padding:0.12rem 0.45rem;border:1px solid;font-weight:700;white-space:nowrap;flex-shrink:0}
-.bt-badge.win{color:var(--acid);border-color:rgba(170,255,0,0.5);background:rgba(170,255,0,0.12)}
-.bt-badge.lose{color:rgba(255,80,80,0.7);border-color:rgba(255,80,80,0.3);background:rgba(255,80,80,0.06)}
-.bt-time{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--acid);white-space:nowrap;flex-shrink:0}
-.arrow{display:flex;align-items:center;padding:0 4px;flex-shrink:0}
-
-/* WINNER BOX */
-.winner-col{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:200px;padding:0 1rem}
-.winner-col-hdr{font-family:'Orbitron',monospace;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-align:center;padding:0.5rem;margin-bottom:0.8rem;border-bottom:1px solid rgba(0,245,255,0.12);color:var(--gold)}
-.winner-cards{display:flex;flex-direction:column;gap:0.8rem;width:100%}
-.winner-card{padding:1.2rem 1rem;text-align:center;position:relative}
-.winner-card.wc-1{border:1px solid rgba(255,204,0,0.5);background:linear-gradient(135deg,rgba(255,204,0,0.1),rgba(255,204,0,0.03));box-shadow:0 0 30px rgba(255,204,0,0.12)}
-.winner-card.wc-1::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.winner-card.wc-2{border:1px solid rgba(184,200,216,0.3);background:linear-gradient(135deg,rgba(184,200,216,0.08),rgba(184,200,216,0.02))}
-.wc-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;margin-bottom:0.5rem}
-.wc-1 .wc-label{color:rgba(255,204,0,0.5)}.wc-2 .wc-label{color:rgba(184,200,216,0.4)}
-.wc-medal{font-size:1.8rem;display:block;margin-bottom:0.4rem}
-.wc-1 .wc-medal{animation:glow1 2s ease-in-out infinite}
-@keyframes glow1{0%,100%{filter:drop-shadow(0 0 10px rgba(255,204,0,0.7))}50%{filter:drop-shadow(0 0 25px rgba(255,204,0,1))}}
-.wc-2 .wc-medal{animation:glow2 2s ease-in-out infinite 0.4s}
-@keyframes glow2{0%,100%{filter:drop-shadow(0 0 8px rgba(184,200,216,0.5))}50%{filter:drop-shadow(0 0 18px rgba(184,200,216,0.9))}}
-.wc-name{font-family:'Orbitron',monospace;font-weight:900;word-break:break-word;line-height:1.3}
-.wc-1 .wc-name{font-size:clamp(0.78rem,1.8vw,1rem);color:var(--gold);text-shadow:0 0 15px rgba(255,204,0,0.4)}
-.wc-2 .wc-name{font-size:clamp(0.72rem,1.6vw,0.9rem);color:var(--silver)}
-.wc-empty{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(200,232,255,0.2);letter-spacing:0.1em}
-.wc-time{font-family:'Share Tech Mono',monospace;font-size:0.65rem;margin-top:0.35rem;opacity:0.7}
-.wc-1 .wc-time{color:var(--gold)}.wc-2 .wc-time{color:var(--silver)}
-
-/* ADMIN STYLES */
-.admin-header{position:relative;z-index:1;padding:7.5rem 5% 1rem;background:radial-gradient(ellipse at 50% 0%,rgba(255,153,0,0.06) 0%,transparent 65%);text-align:center}
-.admin-title{font-family:'Orbitron',monospace;font-size:clamp(1.2rem,3vw,2rem);font-weight:900;color:#fff;letter-spacing:0.1em}
-.admin-title em{font-style:normal;color:var(--orange)}
-.admin-status-bar{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 2rem;background:rgba(255,153,0,0.04);border-bottom:1px solid rgba(255,153,0,0.1);font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:rgba(200,232,255,0.35);letter-spacing:0.08em;flex-wrap:wrap;gap:0.5rem;position:relative;z-index:1}
-.status-ok{color:var(--acid)}.status-err{color:var(--lose)}
-.saving-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--acid);animation:savePulse 0.6s ease-in-out infinite;margin-right:4px;vertical-align:middle}
-@keyframes savePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.6)}}
-
-/* ADMIN EVENT+CAT TABS */
-.admin-tabs-wrap{position:sticky;top:62px;z-index:900;background:rgba(5,10,15,0.97);border-bottom:1px solid rgba(255,153,0,0.12)}
-.admin-event-tabs{display:flex;overflow-x:auto;scrollbar-width:none;max-width:1400px;margin:0 auto;padding:0 2%}
-.admin-event-tabs::-webkit-scrollbar{display:none}
-.aetab{background:none;border:none;border-bottom:2px solid transparent;font-family:'Orbitron',monospace;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;color:rgba(200,232,255,0.35);padding:0.75rem 1rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;margin-bottom:-1px;display:flex;flex-direction:column;align-items:center;gap:0.15rem}
-.aetab:hover{color:rgba(200,232,255,0.7)}.aetab.active{color:var(--orange);border-bottom-color:var(--orange)}
-.aetab-icon{font-size:0.9rem}
-.admin-cat-tabs-wrap{background:rgba(5,10,15,0.88);border-bottom:1px solid rgba(255,153,0,0.07);position:sticky;top:111px;z-index:850}
-.admin-cat-tabs{display:flex;justify-content:center;gap:0;max-width:1400px;margin:0 auto;padding:0 2%}
-.actab{background:none;border:none;border-bottom:2px solid transparent;font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;color:rgba(200,232,255,0.35);padding:0.55rem 2rem;cursor:pointer;transition:all 0.2s;margin-bottom:-1px;white-space:nowrap}
-.actab:hover{color:rgba(200,232,255,0.65)}.actab.active{color:var(--orange);border-bottom-color:var(--orange);background:rgba(255,153,0,0.04)}
-.actab-day{font-size:0.5rem;color:rgba(200,232,255,0.22);display:block;margin-top:0.1rem;letter-spacing:0.1em}
-
-.admin-main{position:relative;z-index:1;padding:1.5rem 2%;max-width:1400px;margin:0 auto}
-.admin-ev-panel{display:none}.admin-ev-panel.active{display:block}
-.admin-cat-panel{display:none}.admin-cat-panel.active{display:block}
-
-/* ADMIN MATCH CARDS */
-.round-section{margin-bottom:2rem}
-.round-hdr{display:flex;align-items:center;gap:0.8rem;padding:0.6rem 1rem;border-left:3px solid var(--neon);background:rgba(0,245,255,0.04);margin-bottom:0.8rem}
-.round-hdr.r1{border-left-color:#00ccff}.round-hdr.r2{border-left-color:#cc00ff}.round-hdr.qf{border-left-color:#ffaa00}.round-hdr.sf{border-left-color:#ff6600}.round-hdr.fn{border-left-color:var(--acid)}
-.round-hdr-title{font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:900;letter-spacing:0.15em;color:#fff}
-.round-hdr-sub{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:rgba(200,232,255,0.3);margin-left:auto;letter-spacing:0.08em}
-.matches-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
-.match-card{background:var(--panel);border:1px solid rgba(0,245,255,0.12);overflow:hidden;transition:border-color 0.2s}
-.match-card:hover{border-color:rgba(0,245,255,0.28)}.match-card.done{border-color:rgba(170,255,0,0.2);background:rgba(170,255,0,0.02)}
-.match-card-hdr{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:rgba(200,232,255,0.25);letter-spacing:0.12em;padding:0.3rem 0.8rem;background:rgba(0,245,255,0.03);border-bottom:1px solid rgba(0,245,255,0.07)}
-.match-card.done .match-card-hdr{background:rgba(170,255,0,0.04)}
-.team-row{display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.8rem;border-bottom:1px solid rgba(0,245,255,0.05)}
-.team-row:last-of-type{border-bottom:none}
-.team-row.won{background:rgba(170,255,0,0.07)}.team-row.lost{background:rgba(255,60,60,0.05);opacity:0.7}
-.tm-name{font-family:'Rajdhani',sans-serif;font-size:0.95rem;font-weight:700;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.team-row.won .tm-name{color:var(--acid)}.team-row.lost .tm-name{color:rgba(200,232,255,0.3);text-decoration:line-through;text-decoration-color:rgba(255,80,80,0.4)}
-.btn-win,.btn-lose{font-family:'Orbitron',monospace;font-size:0.58rem;font-weight:900;letter-spacing:0.12em;padding:0.42rem 0.85rem;border:1px solid;cursor:pointer;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
-.btn-win{color:var(--acid);border-color:rgba(170,255,0,0.4);background:rgba(170,255,0,0.07)}
-.btn-win:hover{background:rgba(170,255,0,0.18);border-color:var(--acid)}
-.btn-win.selected{background:rgba(170,255,0,0.22);border-color:var(--acid);color:#fff}
-.btn-lose{color:rgba(255,80,80,0.75);border-color:rgba(255,80,80,0.3);background:rgba(255,80,80,0.06)}
-.btn-lose:hover{background:rgba(255,80,80,0.15);border-color:rgba(255,80,80,0.6)}
-.btn-lose.selected{background:rgba(255,80,80,0.18);border-color:rgba(255,80,80,0.7);color:#fff}
-.btn-win:disabled,.btn-lose:disabled{opacity:0.4;cursor:not-allowed}
-.time-input{font-family:'Share Tech Mono',monospace;font-size:0.72rem;background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.25);color:var(--acid);padding:0.38rem 0.55rem;width:88px;outline:none;letter-spacing:0.05em}
-.time-input::placeholder{color:rgba(200,232,255,0.2);font-size:0.62rem}
-.time-input:focus{border-color:var(--neon)}
-
-/* ADMIN QUALIFIER TABLE */
-.admin-qual-table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid rgba(0,245,255,0.1);margin-bottom:2rem}
-.admin-qual-table th{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(200,232,255,0.42);letter-spacing:0.18em;padding:0.65rem 1rem;text-align:left;border-bottom:1px solid rgba(0,245,255,0.1);background:rgba(0,245,255,0.05)}
-.admin-qual-table th.c,.admin-qual-table td.c{text-align:center}
-.admin-qual-table tbody tr{border-bottom:1px solid rgba(0,245,255,0.05)}
-.admin-qual-table tbody tr.qrow{background:rgba(170,255,0,0.05)}
-.admin-qual-table td{padding:0.7rem 1rem;vertical-align:middle}
-
-/* Shared */
-.empty-box{text-align:center;padding:3rem 1rem;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(200,232,255,0.25);letter-spacing:0.12em;border:1px solid rgba(0,245,255,0.06);background:var(--panel)}
-.empty-icon{font-size:2rem;display:block;margin-bottom:0.7rem;opacity:0.3}
-.spinner{width:32px;height:32px;border:3px solid rgba(0,245,255,0.12);border-top-color:var(--neon);border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-box{text-align:center;padding:5rem;font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(200,232,255,0.3);letter-spacing:0.12em}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(60px);font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;padding:0.65rem 1.5rem;border:1px solid;z-index:9999;transition:transform 0.3s,opacity 0.3s;opacity:0;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.toast.ok{color:var(--acid);border-color:rgba(170,255,0,0.5);background:rgba(5,10,15,0.95)}
-.toast.err{color:var(--lose);border-color:rgba(255,68,85,0.5);background:rgba(5,10,15,0.95)}
-.refresh-bar{position:fixed;bottom:0;left:0;right:0;height:2px;background:rgba(0,245,255,0.08);z-index:999}
-.refresh-fill{height:100%;background:linear-gradient(90deg,var(--neon),var(--acid));transform-origin:left;width:100%;transition:transform 1s linear}
-.particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.particle{position:absolute;width:2px;height:2px;background:var(--neon);border-radius:50%;opacity:0;animation:pfly var(--dur) var(--delay) linear infinite}
-@keyframes pfly{0%{transform:translateY(100vh);opacity:0}10%{opacity:0.5}90%{opacity:0.15}100%{transform:translateY(-100px) translateX(var(--drift));opacity:0}}
-footer{position:relative;z-index:1;text-align:center;padding:1.2rem;border-top:1px solid rgba(0,245,255,0.07);font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(200,232,255,0.18);letter-spacing:0.12em}
-
-/* RESPONSIVE */
-@media(max-width:1024px){nav{padding:0.8rem 2rem}.sb-main,.admin-main{padding:0 2% 4rem}}
-@media(max-width:768px){
-  nav{padding:0.7rem 1.2rem}.logo{font-size:0.8rem}.logo img{height:28px;width:28px}
-  .live-badge,.admin-live-badge{font-size:0.58rem;padding:0.25rem 0.55rem}
-  .btn-admin,.btn-exit-admin{font-size:0.55rem;padding:0.32rem 0.65rem;letter-spacing:0.08em}
-  .nav-back span{display:none}
-  .page-header{padding:5.8rem 1.2rem 1.2rem}.admin-header{padding:5.8rem 1.2rem 0.8rem}
-  .tabs-wrap{top:56px}.cat-tabs-wrap{top:104px}
-  .admin-tabs-wrap{top:56px}.admin-cat-tabs-wrap{top:104px}
-  .etab{font-size:0.52rem;padding:0.7rem 0.8rem}.aetab{font-size:0.5rem;padding:0.65rem 0.7rem}
-  .ctab,.actab{font-size:0.65rem;padding:0.5rem 1.3rem}
-  .sb-main,.admin-main{padding:0 1rem 4rem}
-  .vbtn{font-size:0.52rem;padding:0.42rem 0.85rem;clip-path:none}
-  .bc{min-width:180px}.bt-name{max-width:105px;font-size:0.8rem}
-  .matches-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-  .winner-col{min-width:168px}
+/* ════════════════════════════════════════
+   BASE RESET & VARIABLES
+════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --neon:#00f5ff; --acid:#aaff00; --gold:#ffcc00; --silver:#b8c8d8;
+  --red:#ff4455;  --orange:#ffaa00; --purple:#cc00ff; --pink:#ff00cc;
+  --bg:#050a0f;   --panel:#0d1e2e;  --panel2:#091624;
+  --border:rgba(0,245,255,.15); --border2:rgba(255,255,255,.05);
+  --text:#c8e8ff; --dim:rgba(200,232,255,.42);
+  --fm:'Share Tech Mono',monospace; --fd:'Orbitron',sans-serif;
+  /* layout */
+  --nav-h:52px; --mobnav-h:58px;
 }
-@media(max-width:480px){
-  nav{padding:0.65rem 0.9rem}.logo{font-size:0.72rem}.logo img{height:24px;width:24px}
-  .live-badge,.admin-live-badge{display:none}
-  .btn-admin,.btn-exit-admin{font-size:0.5rem;padding:0.28rem 0.55rem}
-  .page-header{padding:5rem 0.8rem 0.8rem}.admin-header{padding:5rem 0.8rem 0.6rem}
-  .tabs-wrap{top:50px}.cat-tabs-wrap{top:96px}
-  .admin-tabs-wrap{top:50px}.admin-cat-tabs-wrap{top:96px}
-  .etab{font-size:0.44rem;padding:0.6rem 0.55rem}.aetab{font-size:0.43rem;padding:0.58rem 0.5rem}
-  .ctab,.actab{font-size:0.6rem;padding:0.45rem 0.9rem}
-  .sb-main,.admin-main{padding:0 0.6rem 3.5rem}
-  .vbtn{font-size:0.48rem;padding:0.38rem 0.65rem}
-  .bc{min-width:150px}.bt-name{max-width:85px;font-size:0.75rem}
-  .matches-grid{grid-template-columns:1fr}
-  .btn-win,.btn-lose{font-size:0.52rem;padding:0.45rem 0.7rem}
-  .tm-name{font-size:0.85rem}
-  .winner-col{min-width:148px;padding:0 0.5rem}
-  .wc-1 .wc-name{font-size:0.82rem}.wc-2 .wc-name{font-size:0.75rem}
-  .admin-status-bar{flex-direction:column;align-items:flex-start;gap:0.3rem;padding:0.45rem 0.9rem}
+html{scroll-behavior:smooth;height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--fm);
+  min-height:100vh;overflow-x:hidden;line-height:1.4}
+
+/* grid bg */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(0,245,255,.025)1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,245,255,.025)1px,transparent 1px);
+  background-size:clamp(24px,4vw,44px) clamp(24px,4vw,44px)}
+
+/* particles */
+#pts{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.pt{position:absolute;width:1px;height:1px;background:var(--neon);border-radius:50%;
+  animation:pf linear infinite;opacity:0}
+@keyframes pf{
+  0%{opacity:0;transform:translateY(100vh) translateX(0)}
+  10%{opacity:.5} 90%{opacity:.1}
+  100%{opacity:0;transform:translateY(-5vh) translateX(15px)}
 }
+
+/* ════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════ */
+.wrap{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ════════════════════════════════════════
+   NAVBAR
+════════════════════════════════════════ */
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem 1rem;min-height:var(--nav-h);
+  border-bottom:1px solid var(--border);background:rgba(5,10,15,.97);
+  position:sticky;top:0;z-index:200;gap:.5rem;
+}
+.nl{display:flex;align-items:center;gap:.55rem;min-width:0;flex:1}
+.nlogo{height:28px;width:auto;flex-shrink:0;object-fit:contain}
+.ntitle{
+  font-family:var(--fd);font-weight:700;color:var(--neon);letter-spacing:.1em;
+  font-size:clamp(.65rem,2.2vw,.95rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.nr{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+
+/* pills */
+.pill{display:flex;align-items:center;gap:.3rem;border:1px solid;
+  padding:.22rem .55rem;font-size:clamp(.52rem,.8vw,.6rem);letter-spacing:.1em;white-space:nowrap}
+.plive{border-color:rgba(0,245,255,.3);color:var(--neon);background:rgba(0,245,255,.06)}
+.padmin{border-color:rgba(255,170,0,.4);color:var(--orange);background:rgba(255,170,0,.06);display:none}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--neon);flex-shrink:0;animation:ld 1.2s infinite}
+@keyframes ld{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.6)}}
+.gchip{background:rgba(0,245,255,.12);border:1px solid rgba(0,245,255,.3);
+  color:var(--neon);font-size:.5rem;padding:.08rem .35rem}
+
+/* nav buttons */
+.bnav{
+  background:transparent;border:1px solid;font-family:var(--fm);
+  font-size:clamp(.52rem,.8vw,.6rem);padding:.28rem .65rem;cursor:pointer;
+  letter-spacing:.1em;display:flex;align-items:center;gap:.3rem;white-space:nowrap;
+  transition:background .2s;
+}
+.bopen{border-color:rgba(255,170,0,.5);color:var(--orange)}.bopen:hover{background:rgba(255,170,0,.1)}
+.bexit{border-color:rgba(255,68,85,.5);color:var(--red);display:none}.bexit:hover{background:rgba(255,68,85,.1)}
+
+/* countdown bar */
+.cbar{height:2px;background:linear-gradient(90deg,var(--neon),var(--acid));
+  transition:width 1s linear;opacity:.35;width:100%}
+
+/* ════════════════════════════════════════
+   HERO
+════════════════════════════════════════ */
+.hero{text-align:center;padding:clamp(1.2rem,4vw,2.8rem) 1rem clamp(.8rem,2vw,1.2rem)}
+.hero-eye{font-size:clamp(.52rem,.8vw,.65rem);letter-spacing:.3em;color:var(--neon);opacity:.6;margin-bottom:.35rem}
+.hero-h1{
+  font-family:var(--fd);font-weight:900;line-height:1;
+  font-size:clamp(1.5rem,5.5vw,3.8rem);
+  color:#fff;text-shadow:0 0 50px rgba(0,245,255,.3),0 0 100px rgba(0,245,255,.1);
+}
+.hero-h1 span{color:var(--neon)}
+.hero-meta{
+  display:flex;justify-content:center;gap:clamp(.8rem,3vw,2rem);
+  margin-top:.6rem;font-size:clamp(.52rem,.75vw,.63rem);color:var(--dim);flex-wrap:wrap;
+}
+.hero-meta b{color:var(--neon)}
+
+/* ════════════════════════════════════════
+   EVENT TABS
+════════════════════════════════════════ */
+.tscroll{overflow-x:auto;border-bottom:1px solid var(--border);
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tscroll::-webkit-scrollbar{display:none}
+.trow{display:flex;min-width:max-content}
+.etab{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  padding:clamp(.45rem,.8vw,.75rem) clamp(.7rem,1.5vw,1.2rem);
+  font-family:var(--fm);font-size:clamp(.55rem,.68vw,.68rem);letter-spacing:.1em;
+  color:var(--dim);cursor:pointer;display:flex;flex-direction:column;align-items:center;
+  gap:.2rem;white-space:nowrap;transition:color .2s,border-color .2s;
+}
+.etab.active{color:var(--neon);border-bottom-color:var(--neon)}
+.etab:hover:not(.active){color:var(--text)}
+.etab.dis{opacity:.2;pointer-events:none;filter:grayscale(1)}
+.eico{font-size:clamp(.85rem,1.1vw,1.15rem)}
+
+/* ════════════════════════════════════════
+   GRADE / CATEGORY TABS
+════════════════════════════════════════ */
+.cscroll{overflow-x:auto;background:rgba(0,0,0,.2);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cscroll::-webkit-scrollbar{display:none}
+.crow{display:flex;min-width:max-content;padding:0 .5rem}
+.ctab{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  padding:clamp(.38rem,.6vw,.55rem) clamp(.65rem,1.2vw,1rem);
+  font-family:var(--fm);font-size:clamp(.55rem,.65vw,.63rem);letter-spacing:.12em;
+  color:var(--dim);cursor:pointer;white-space:nowrap;transition:color .2s,border-color .2s;
+}
+.ctab.active{color:var(--acid);border-bottom-color:var(--acid)}
+
+/* ════════════════════════════════════════
+   VIEW BAR
+════════════════════════════════════════ */
+.vbar{display:flex;gap:.4rem;padding:.55rem 1rem;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.vbtn{
+  background:transparent;border:1px solid var(--border);
+  padding:.28rem clamp(.5rem,1vw,.75rem);font-family:var(--fm);
+  font-size:clamp(.52rem,.62vw,.6rem);letter-spacing:.1em;color:var(--dim);
+  cursor:pointer;transition:all .2s;
+}
+.vbtn.active{border-color:var(--neon);color:var(--neon);background:rgba(0,245,255,.07)}
+
+/* ════════════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════════════ */
+.main{padding:clamp(.6rem,1.5vw,1rem);flex:1}
+
+/* ════════════════════════════════════════
+   LOADING / ERROR / EMPTY
+════════════════════════════════════════ */
+.loader{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:4rem 1rem;gap:1rem}
+.spin{width:36px;height:36px;border:3px solid var(--border);
+  border-top-color:var(--neon);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ltxt{font-size:.66rem;letter-spacing:.2em;color:var(--dim)}
+.errbox{
+  background:rgba(255,68,85,.07);border:1px solid rgba(255,68,85,.3);
+  padding:1.4rem;margin:1.5rem auto;max-width:460px;text-align:center;line-height:1.9;
+}
+.errbox h3{color:var(--red);font-size:.82rem;margin-bottom:.5rem;letter-spacing:.1em}
+.errbox p{font-size:.66rem;color:var(--dim)}
+.empty{text-align:center;padding:3rem 1rem;color:var(--dim);font-size:.7rem;letter-spacing:.1em}
+.na{text-align:center;padding:2.5rem 1rem;color:var(--dim);font-size:.68rem;letter-spacing:.15em}
+
+/* ════════════════════════════════════════
+   BRACKET INFO BANNER
+════════════════════════════════════════ */
+.binfo{
+  background:rgba(0,245,255,.04);border:1px solid rgba(0,245,255,.12);
+  padding:.65rem 1rem;margin-bottom:1rem;
+  display:flex;gap:clamp(.6rem,2vw,1.8rem);flex-wrap:wrap;font-size:clamp(.6rem,.75vw,.65rem);
+}
+.binfo span b{color:var(--neon)}
+
+/* ════════════════════════════════════════
+   QUALIFIER TABLE
+════════════════════════════════════════ */
+.qtbl{width:100%;border-collapse:collapse;font-size:clamp(.62rem,.78vw,.73rem)}
+.qtbl th{
+  padding:.5rem .7rem;text-align:left;border-bottom:1px solid var(--border);
+  color:var(--dim);font-size:.56rem;letter-spacing:.15em;
+}
+.qtbl td{padding:.48rem .7rem;border-bottom:1px solid var(--border2)}
+.qrow.q{background:rgba(170,255,0,.03)}.qrow.q td:first-child{color:var(--acid)}
+.qdiv td{
+  background:rgba(255,68,85,.05);color:var(--red);font-size:.56rem;
+  letter-spacing:.15em;padding:.32rem .7rem;border-top:1px solid rgba(255,68,85,.18);
+}
+.rnk{color:var(--dim);font-weight:bold}.rnk.t{color:var(--acid)}
+.bdg{display:inline-block;font-size:.5rem;padding:.1rem .32rem;letter-spacing:.07em;border-radius:2px}
+.bq{background:rgba(170,255,0,.12);border:1px solid rgba(170,255,0,.3);color:var(--acid)}
+.be{background:rgba(255,68,85,.1);border:1px solid rgba(255,68,85,.25);color:var(--red)}
+.bp{background:rgba(200,232,255,.04);border:1px solid rgba(200,232,255,.1);color:var(--dim)}
+
+/* ════════════════════════════════════════
+   BRACKET SCROLL + COLUMNS
+════════════════════════════════════════ */
+.bwrap{overflow-x:auto;padding:.5rem 0;-webkit-overflow-scrolling:touch}
+.bracket{display:flex;align-items:flex-start;min-width:max-content;padding:.2rem .4rem}
+.bcol{display:flex;flex-direction:column;padding:0 .35rem;
+  min-width:clamp(148px,17vw,205px)}
+.bchdr{
+  font-size:.56rem;letter-spacing:.15em;padding:.32rem .15rem;
+  margin-bottom:.65rem;border-bottom:1px solid;
+}
+.bchdr.qual{color:var(--neon);border-color:rgba(0,245,255,.3)}
+.bchdr.r32{color:var(--pink);border-color:rgba(255,0,204,.3)}
+.bchdr.r16{color:var(--orange);border-color:rgba(255,170,0,.3)}
+.bchdr.qf{color:#ffd000;border-color:rgba(255,208,0,.3)}
+.bchdr.sf{color:#ff6200;border-color:rgba(255,98,0,.3)}
+.bchdr.fn{color:var(--acid);border-color:rgba(170,255,0,.3)}
+
+/* match card */
+.mc{background:var(--panel);border:1px solid var(--border);margin-bottom:.45rem;
+  border-radius:3px;overflow:hidden;transition:border-color .2s}
+.mcid{font-size:.5rem;color:var(--dim);padding:.26rem .48rem;
+  background:rgba(0,0,0,.22);letter-spacing:.07em}
+.mct{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.42rem .48rem;border-top:1px solid var(--border2);gap:.3rem;
+}
+.mct.win{background:rgba(170,255,0,.06)}
+.mct.lose{opacity:.38}
+.mct.bye{background:rgba(0,245,255,.05);opacity:.72}
+.mcn{font-size:clamp(.58rem,.72vw,.7rem);flex:1;word-break:break-word;min-width:0}
+.mcn.tbd{color:var(--dim);font-style:italic}
+.mcr{font-size:.48rem;padding:.1rem .3rem;border-radius:2px;font-weight:bold;flex-shrink:0}
+.mcr.win{background:rgba(170,255,0,.2);color:var(--acid)}
+.mcr.lose{background:rgba(255,68,85,.15);color:var(--red)}
+.mcr.bye{background:rgba(0,245,255,.12);color:var(--neon)}
+
+/* ════════════════════════════════════════
+   WINNER PODIUM
+════════════════════════════════════════ */
+.podium{
+  display:flex;gap:clamp(.8rem,2.5vw,1.5rem);
+  justify-content:center;padding:clamp(1rem,4vw,2.5rem) 1rem;flex-wrap:wrap;
+}
+.pod{text-align:center;padding:clamp(.9rem,2.5vw,2rem) clamp(.8rem,2vw,1.5rem);
+  width:clamp(130px,28vw,210px)}
+.pod.gld{
+  background:rgba(255,204,0,.06);border:1px solid rgba(255,204,0,.32);
+  box-shadow:0 0 28px rgba(255,204,0,.09);
+}
+.pod.slv{background:rgba(184,200,216,.06);border:1px solid rgba(184,200,216,.28)}
+.pmed{font-size:clamp(1.6rem,4vw,2.7rem);margin-bottom:.4rem}
+.ppl{font-size:.56rem;letter-spacing:.2em;opacity:.6;margin-bottom:.3rem}
+.pnm{font-family:var(--fd);font-size:clamp(.65rem,1.4vw,.88rem);
+  font-weight:700;color:#fff;word-break:break-word}
+.pod.gld .pnm{color:var(--gold)}.pod.slv .pnm{color:var(--silver)}
+
+/* ════════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════════ */
+.adhdr{text-align:center;padding:1rem 1rem .35rem}
+.adhdr h2{font-family:var(--fd);font-size:clamp(.85rem,1.8vw,1.15rem);
+  color:var(--orange);letter-spacing:.15em}
+.stbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.3rem 1rem;background:rgba(0,0,0,.28);
+  font-size:clamp(.55rem,.7vw,.6rem);border-bottom:1px solid var(--border);
+  flex-wrap:wrap;gap:.3rem;
+}
+.sok{color:var(--acid)}.serr{color:var(--red)}.ssav{color:var(--neon)}
+.brel{background:transparent;border:1px solid var(--border);color:var(--neon);
+  font-family:var(--fm);font-size:.56rem;padding:.16rem .5rem;cursor:pointer;letter-spacing:.07em}
+
+/* round sections */
+.rsec{margin-bottom:1.4rem}
+.rhdr{
+  font-size:clamp(.58rem,.72vw,.68rem);letter-spacing:.18em;
+  padding:.42rem .8rem;border-left:3px solid;margin-bottom:.65rem;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.3rem;
+}
+.rhdr.qual{border-color:var(--neon);color:var(--neon);background:rgba(0,245,255,.04)}
+.rhdr.r32{border-color:var(--pink);color:var(--pink);background:rgba(255,0,204,.04)}
+.rhdr.r16{border-color:var(--orange);color:var(--orange);background:rgba(255,170,0,.04)}
+.rhdr.qf{border-color:#ffd000;color:#ffd000;background:rgba(255,208,0,.04)}
+.rhdr.sf{border-color:#ff6200;color:#ff6200;background:rgba(255,98,0,.04)}
+.rhdr.fn{border-color:var(--acid);color:var(--acid);background:rgba(170,255,0,.04)}
+.rhr{font-size:.55rem;opacity:.6}
+
+/* match grid */
+.mgrid{display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(230px,28vw,295px),1fr));gap:.45rem}
+.amc{background:var(--panel);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.amc.done{border-color:rgba(170,255,0,.22);background:rgba(170,255,0,.012)}
+.amid{font-size:.56rem;color:var(--dim);padding:.28rem .65rem;
+  background:rgba(0,0,0,.2);letter-spacing:.07em;
+  display:flex;justify-content:space-between;align-items:center}
+.dtag{color:var(--acid);font-size:.5rem}
+.amr{display:flex;align-items:center;padding:.42rem .65rem;
+  border-top:1px solid var(--border2);gap:.4rem;flex-wrap:wrap}
+.amr.won{background:rgba(170,255,0,.05)}
+.amr.lost{opacity:.48}
+.amr.bye{background:rgba(0,245,255,.04)}
+.amn{flex:1;font-size:clamp(.65rem,.78vw,.76rem);min-width:70px}
+.btns{display:flex;gap:.25rem;flex-shrink:0}
+.bw,.bl,.bb{
+  border:1px solid;font-family:var(--fm);font-size:clamp(.55rem,.65vw,.6rem);
+  padding:.28rem .5rem;cursor:pointer;letter-spacing:.07em;
+  font-weight:bold;transition:background .15s;background:transparent;
+}
+.bw{border-color:rgba(170,255,0,.4);color:var(--acid)}
+.bw:hover,.bw.on{background:rgba(170,255,0,.18)}
+.bl{border-color:rgba(255,68,85,.35);color:var(--red)}
+.bl:hover,.bl.on{background:rgba(255,68,85,.18)}
+.bb{border-color:rgba(0,245,255,.3);color:var(--neon)}
+.bb:hover,.bb.on{background:rgba(0,245,255,.14)}
+.bw:disabled,.bl:disabled,.bb:disabled{opacity:.28;cursor:not-allowed}
+
+/* qualifier time input */
+.qigrid{display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(200px,26vw,260px),1fr));
+  gap:.38rem;margin-bottom:1rem}
+.qi{display:flex;align-items:center;gap:.45rem;
+  background:var(--panel);border:1px solid var(--border);padding:.42rem .65rem}
+.qi.top{border-left:2px solid var(--acid)}
+.qir{width:20px;font-size:.62rem;color:var(--dim);text-align:center;flex-shrink:0}
+.qir.t{color:var(--acid)}
+.qin{flex:1;font-size:.68rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qii{background:rgba(0,0,0,.4);border:1px solid var(--border);color:var(--text);
+  font-family:var(--fm);font-size:.68rem;padding:.26rem .4rem;
+  width:75px;text-align:center;flex-shrink:0}
+.qii:focus{outline:none;border-color:var(--neon)}
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+.toast{
+  position:fixed;left:50%;bottom:1rem;z-index:999;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--panel);border:1px solid var(--border);
+  padding:.5rem 1rem;font-size:.66rem;letter-spacing:.07em;
+  transition:transform .28s ease;pointer-events:none;
+  white-space:nowrap;max-width:88vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(170,255,0,.4);color:var(--acid)}
+.toast.err{border-color:rgba(255,68,85,.4);color:var(--red)}
+
+/* ════════════════════════════════════════
+   PASSWORD OVERLAY
+════════════════════════════════════════ */
+.pwov{position:fixed;inset:0;background:rgba(5,10,15,.97);
+  z-index:500;display:none;align-items:center;justify-content:center;
+  flex-direction:column;padding:1rem}
+.pwov.show{display:flex}
+.pwbox{background:var(--panel);border:1px solid var(--border);
+  padding:clamp(1.2rem,3vw,2rem);width:min(310px,92vw);text-align:center}
+.pwtit{font-family:var(--fd);font-size:.92rem;color:var(--orange);letter-spacing:.15em;margin-bottom:.22rem}
+.pwsub{font-size:.56rem;color:var(--dim);letter-spacing:.15em;margin-bottom:.18rem}
+.pwhint{font-size:.5rem;color:rgba(200,232,255,.18);letter-spacing:.12em;margin-bottom:.9rem}
+.pwin{width:100%;background:rgba(0,0,0,.5);border:1px solid var(--border);
+  color:var(--text);font-family:var(--fm);font-size:1rem;padding:.6rem;
+  text-align:center;letter-spacing:.2em;margin-bottom:.65rem}
+.pwin:focus{outline:none;border-color:var(--neon)}
+.pwin.shake{animation:sh .38s}
+@keyframes sh{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.pwerr{color:var(--red);font-size:.6rem;height:.85rem;margin-bottom:.38rem}
+.pwbtn{width:100%;background:rgba(255,170,0,.11);border:1px solid rgba(255,170,0,.38);
+  color:var(--orange);font-family:var(--fm);font-size:.7rem;padding:.62rem;cursor:pointer;letter-spacing:.12em}
+.pwcancel{background:transparent;border:none;color:var(--dim);font-family:var(--fm);
+  font-size:.6rem;cursor:pointer;margin-top:.4rem;letter-spacing:.1em;display:block;width:100%}
+
+/* ════════════════════════════════════════
+   MOBILE BOTTOM NAV (≤ 520px)
+════════════════════════════════════════ */
+.mobnav{
+  display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mobnav-h);
+  background:rgba(5,10,15,.98);border-top:1px solid var(--border);
+  z-index:100;
+}
+.mobnav-inner{display:flex;height:100%}
+.mtab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.18rem;font-family:var(--fm);font-size:.48rem;letter-spacing:.09em;
+  color:var(--dim);background:transparent;border:none;cursor:pointer;transition:color .2s;
+}
+.mtab.active{color:var(--neon)}
+.mtico{font-size:1.05rem;line-height:1}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — TABLET (481–900px)
+════════════════════════════════════════ */
+@media(min-width:481px) and (max-width:900px){
+  .mgrid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .qigrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .bcol{min-width:155px}
+  .btns{flex-wrap:wrap}
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 520px)
+════════════════════════════════════════ */
+@media(max-width:520px){
+  :root{--mobnav-h:56px}
+  .wrap{padding-bottom:var(--mobnav-h)}
+  .mobnav{display:block}
+  .toast{bottom:calc(var(--mobnav-h) + .5rem)}
+
+  .nav{padding:.4rem .7rem}
+  .ntitle{font-size:.62rem}
+  .hero{padding:1rem .75rem .75rem}
+  .hero-h1{font-size:clamp(1.4rem,8vw,2rem)}
+
+  .main{padding:.5rem .5rem}
+  .mgrid{grid-template-columns:1fr}
+  .qigrid{grid-template-columns:1fr 1fr}
+  .bcol{min-width:138px}
+  .binfo{font-size:.56rem;gap:.5rem .7rem}
+  .amr{padding:.38rem .5rem}
+  .bw,.bl,.bb{padding:.26rem .42rem;font-size:.55rem}
+  .btns{gap:.2rem}
+
+  /* hide desktop view bar on mobile — using bottom nav instead */
+  .vbar{display:none}
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (≤ 360px)
+════════════════════════════════════════ */
 @media(max-width:360px){
-  .logo{font-size:0.65rem}.etab{font-size:0.4rem;padding:0.55rem 0.45rem}.aetab{font-size:0.38rem;padding:0.52rem 0.4rem}
-  .ctab,.actab{font-size:0.55rem;padding:0.4rem 0.7rem}.bc{min-width:134px}
+  .hero-h1{font-size:1.3rem}
+  .ntitle{font-size:.56rem}
+  .qigrid{grid-template-columns:1fr}
+  .bcol{min-width:125px}
+  .bw,.bl,.bb{padding:.22rem .35rem;font-size:.5rem}
 }
 
-.bye-badge{display:inline-block;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.3);color:var(--neon);font-size:0.55rem;padding:0.1rem 0.4rem;border-radius:3px;letter-spacing:0.08em;margin-left:0.4rem}
+/* ════════════════════════════════════════
+   RESPONSIVE — LARGE DESKTOP (≥ 1400px)
+════════════════════════════════════════ */
+@media(min-width:1400px){
+  .mgrid{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+  .qigrid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .bcol{min-width:215px}
+}
 </style>
 </head>
 <body>
-<div class="particles" id="particles"></div>
-<div class="refresh-bar"><div class="refresh-fill" id="refreshFill"></div></div>
-<div class="toast" id="toast"></div>
+<div id="pts"></div>
 
-<!-- PASSWORD -->
-<div class="pw-overlay" id="pwOverlay">
-  <div class="pw-box">
-    <div class="pw-title">&#9881; ADMIN ACCESS</div>
-    <div class="pw-sub">KOS TECHTRONICA 2026</div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:rgba(200,232,255,0.2);letter-spacing:0.12em;margin-bottom:1.2rem">USE YOUR GRADE PASSWORD</div>
-    <label class="pw-label" for="pwInput">ENTER PASSWORD</label>
-    <input class="pw-input" type="password" id="pwInput" maxlength="10" placeholder="&#9679;&#9679;&#9679;&#9679;" onkeydown="if(event.key==='Enter')checkPw()">
-    <button class="pw-btn" onclick="checkPw()">&#128274; UNLOCK</button>
-    <button class="pw-cancel" onclick="closePw()">CANCEL</button>
-    <div class="pw-err" id="pwErr"></div>
-    <div class="pw-hint">&#9670; AUTHORIZED PERSONNEL ONLY &#9670;</div>
+<!-- PASSWORD OVERLAY -->
+<div class="pwov" id="pwov">
+  <div class="pwbox">
+    <div class="pwtit">&#9881; ADMIN ACCESS</div>
+    <div class="pwsub">KOS TECHTRONICA 2026</div>
+    <div class="pwhint">ENTER YOUR GRADE PASSWORD</div>
+    <input class="pwin" id="pwin" type="password" placeholder="••••••"
+      onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="pwerr" id="pwerr"></div>
+    <button class="pwbtn" onclick="checkPw()">ENTER</button>
+    <button class="pwcancel" onclick="closePw()">CANCEL</button>
   </div>
 </div>
 
-<!-- NAV -->
-<nav>
-  <a href="index.html" class="logo"><img src="1.png" alt="KOS">KOS <span>TECHTRONICA</span></a>
-  <div class="nav-right">
-    <div class="live-badge" id="liveBadge">&#9679; LIVE</div>
-    <div class="admin-live-badge" id="adminLiveBadge">&#9881; ADMIN</div>
-    <a href="index.html" class="nav-back" id="navBack">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>MAIN SITE</span>
-    </a>
-    <button class="btn-admin" id="btnAdmin" onclick="openPw()">&#9881; ADMIN</button>
-    <button class="btn-exit-admin" id="btnExitAdmin" onclick="exitAdmin()">&#10005; EXIT ADMIN</button>
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+
+<!-- ── NAVBAR ─────────────────────────── -->
+<nav class="nav">
+  <div class="nl">
+    <img src="1.png" class="nlogo" alt="" onerror="this.style.display='none'">
+    <span class="ntitle">KOS PREMIER LEAGUE 2026</span>
+  </div>
+  <div class="nr">
+    <div class="pill plive" id="plive"><span class="ldot"></span>LIVE</div>
+    <div class="pill padmin" id="padmin">&#9881;&nbsp;ADMIN&nbsp;<span class="gchip" id="gchip"></span></div>
+    <button class="bnav bopen" id="bopen" onclick="openPw()">&#9881; ADMIN</button>
+    <button class="bnav bexit" id="bexit" onclick="exitAdmin()">&#10005; EXIT</button>
+  </div>
+</nav>
+<div class="cbar" id="cbar"></div>
+
+<!-- ════════════════════════════════════
+     SCOREBOARD MODE
+════════════════════════════════════════ -->
+<div id="sbMode">
+  <div class="hero">
+    <div class="hero-eye">&#9670; KOS PREMIER LEAGUE 2026 &#9670;</div>
+    <h1 class="hero-h1">LIVE <span>SCOREBOARD</span></h1>
+    <div class="hero-meta">
+      <span>&#128197;&nbsp;Updated:&nbsp;<b id="lastUp">—</b></span>
+      <span>&#8987;&nbsp;Refresh in:&nbsp;<b id="refIn">10s</b></span>
+    </div>
+  </div>
+
+  <!-- Event tabs -->
+  <div class="tscroll">
+    <div class="trow" id="evTabs">
+      <button class="etab active" data-ev="Robo Race" onclick="sbEv('Robo Race',this)">
+        <span class="eico">&#127950;</span>ROBO RACE</button>
+      <button class="etab" data-ev="Robo Soccer" onclick="sbEv('Robo Soccer',this)">
+        <span class="eico">&#9917;</span>ROBO SOCCER</button>
+      <button class="etab" data-ev="Robo Kabaddi" onclick="sbEv('Robo Kabaddi',this)">
+        <span class="eico">&#129354;</span>ROBO KABADDI</button>
+      <button class="etab" data-ev="Robo Sumo" onclick="sbEv('Robo Sumo',this)">
+        <span class="eico">&#129354;</span>ROBO SUMO</button>
+      <button class="etab" data-ev="All Terrain" onclick="sbEv('All Terrain',this)">
+        <span class="eico">&#127956;</span>ALL TERRAIN</button>
+      <button class="etab" data-ev="Logic Robots" onclick="sbEv('Logic Robots',this)">
+        <span class="eico">&#129504;</span>LOGIC ROBOTS</button>
+    </div>
+  </div>
+
+  <!-- Grade tabs -->
+  <div class="cscroll">
+    <div class="crow" id="catTabs">
+      <button class="ctab active" data-cat="7-9" onclick="sbCat('7-9',this)">GRADE 7-9</button>
+      <button class="ctab" data-cat="4-6" onclick="sbCat('4-6',this)">GRADE 4-6</button>
+      <button class="ctab" data-cat="1-3" onclick="sbCat('1-3',this)">GRADE 1-3</button>
+      <button class="ctab" data-cat="IM25 3-5" onclick="sbCat('IM25 3-5',this)">IM25 3-5</button>
+      <button class="ctab" data-cat="IM25 6-9" onclick="sbCat('IM25 6-9',this)">IM25 6-9</button>
+    </div>
+  </div>
+
+  <!-- View bar (desktop/tablet) -->
+  <div class="vbar">
+    <button class="vbtn" id="vbq" onclick="sbView('qual')" style="display:none">
+      &#127950; QUALIFIER</button>
+    <button class="vbtn active" id="vbb" onclick="sbView('bracket')">
+      &#9889; BRACKET</button>
+    <button class="vbtn" id="vbw" onclick="sbView('winner')">
+      &#127942; WINNER</button>
+  </div>
+
+  <div class="main" id="sbc">
+    <div class="loader"><div class="spin"></div><div class="ltxt">LOADING SCORES...</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ADMIN MODE
+════════════════════════════════════════ -->
+<div id="admMode" style="display:none">
+  <div class="adhdr"><h2>&#9881; ADMIN PANEL</h2></div>
+  <div class="stbar">
+    <span id="admLoaded" style="opacity:.5">Not loaded</span>
+    <span id="saveSt"></span>
+    <button class="brel" onclick="loadAdmin()">&#8635; RELOAD</button>
+  </div>
+
+  <!-- Admin event tabs -->
+  <div class="tscroll">
+    <div class="trow" id="admEvTabs">
+      <button class="etab active" data-ev="Robo Race" onclick="admEv('Robo Race',this)">
+        <span class="eico">&#127950;</span>ROBO RACE</button>
+      <button class="etab" data-ev="Robo Soccer" onclick="admEv('Robo Soccer',this)">
+        <span class="eico">&#9917;</span>ROBO SOCCER</button>
+      <button class="etab" data-ev="Robo Kabaddi" onclick="admEv('Robo Kabaddi',this)">
+        <span class="eico">&#129354;</span>ROBO KABADDI</button>
+      <button class="etab" data-ev="Robo Sumo" onclick="admEv('Robo Sumo',this)">
+        <span class="eico">&#129354;</span>ROBO SUMO</button>
+      <button class="etab" data-ev="All Terrain" onclick="admEv('All Terrain',this)">
+        <span class="eico">&#127956;</span>ALL TERRAIN</button>
+      <button class="etab" data-ev="Logic Robots" onclick="admEv('Logic Robots',this)">
+        <span class="eico">&#129504;</span>LOGIC ROBOTS</button>
+    </div>
+  </div>
+
+  <div class="main" id="admc"></div>
+</div>
+
+<!-- ── MOBILE BOTTOM NAV ──────────────── -->
+<nav class="mobnav" id="mobnav">
+  <div class="mobnav-inner">
+    <button class="mtab active" id="mbb" onclick="sbView('bracket')">
+      <span class="mtico">&#9889;</span>BRACKET</button>
+    <button class="mtab" id="mbq" onclick="sbView('qual')" style="display:none">
+      <span class="mtico">&#127950;</span>QUALIFIER</button>
+    <button class="mtab" id="mbw" onclick="sbView('winner')">
+      <span class="mtico">&#127942;</span>WINNER</button>
   </div>
 </nav>
 
-<!-- ══════════════ SCOREBOARD MODE ══════════════ -->
-<div id="scoreboardMode">
-  <div class="page-header">
-    <span class="section-tag">&#9670; KOS TECHTRONICA 2026 &#9670;</span>
-    <h1 class="page-title">LIVE <em>SCOREBOARD</em></h1>
-    <div class="status-row">
-      <span>&#128197; Updated: <span id="lastUpdated">—</span></span>
-      <span>&#9201; Refresh in: <span id="nextRefresh">10s</span></span>
-    </div>
-  </div>
-
-  <!-- Level 1: Event tabs -->
-  <div class="tabs-wrap">
-    <div class="event-tabs" id="sbEventTabs">
-      <button class="etab active" onclick="showSbEvent('Robo Race',this)"><span class="etab-icon">&#127950;</span>ROBO RACE</button>
-      <button class="etab" onclick="showSbEvent('Robo Soccer',this)"><span class="etab-icon">&#9917;</span>ROBO SOCCER</button>
-      <button class="etab" onclick="showSbEvent('Robo Kabaddi',this)"><span class="etab-icon">&#129354;</span>ROBO KABADDI</button>
-      <button class="etab" onclick="showSbEvent('Robo Sumo',this)"><span class="etab-icon">&#129354;</span>ROBO SUMO</button>
-      <button class="etab" onclick="showSbEvent('All Terrain',this)"><span class="etab-icon">&#127956;</span>ALL TERRAIN</button>
-      <button class="etab" onclick="showSbEvent('Logic Robots',this)"><span class="etab-icon">&#129504;</span>LOGIC ROBOTS</button>
-    </div>
-  </div>
-
-  <!-- Level 2: Category sub-tabs -->
-  <div class="cat-tabs-wrap">
-    <div class="cat-tabs" id="sbCatTabs">
-      <button class="ctab active" onclick="showSbCat('7-9',this)">GRADE 7-9</button>
-      <button class="ctab" onclick="showSbCat('4-6',this)">GRADE 4-6</button>
-      <button class="ctab" onclick="showSbCat('1-3',this)">GRADE 1-3</button>
-      <button class="ctab" onclick="showSbCat('IM25 3-5',this)">IM25 3-5</button>
-      <button class="ctab" onclick="showSbCat('IM25 6-9',this)">IM25 6-9</button>
-    </div>
-  </div>
-
-  <div class="sb-main" id="sbMainContent">
-    <div class="loading-box"><div class="spinner" style="margin-bottom:1.2rem"></div>LOADING SCORES...</div>
-  </div>
-</div>
-
-<!-- ══════════════ ADMIN MODE ══════════════ -->
-<div id="adminMode">
-  <div class="admin-header"><h1 class="admin-title">&#9881; ADMIN <em>PANEL</em></h1></div>
-  <div class="admin-status-bar">
-    <span>&#128197; Loaded: <span id="adminLoadedAt">—</span></span>
-    <span id="saveStatus">Ready</span>
-  </div>
-
-  <!-- Admin Level 1: Event tabs -->
-  <div class="admin-tabs-wrap">
-    <div class="admin-event-tabs" id="adminEventTabs">
-      <button class="aetab active" onclick="showAdminEvent('Robo Race',this)"><span class="aetab-icon">&#127950;</span>ROBO RACE</button>
-      <button class="aetab" onclick="showAdminEvent('Robo Soccer',this)"><span class="aetab-icon">&#9917;</span>ROBO SOCCER</button>
-      <button class="aetab" onclick="showAdminEvent('Robo Kabaddi',this)"><span class="aetab-icon">&#129354;</span>ROBO KABADDI</button>
-      <button class="aetab" onclick="showAdminEvent('Robo Sumo',this)"><span class="aetab-icon">&#129354;</span>ROBO SUMO</button>
-      <button class="aetab" onclick="showAdminEvent('All Terrain',this)"><span class="aetab-icon">&#127956;</span>ALL TERRAIN</button>
-      <button class="aetab" onclick="showAdminEvent('Logic Robots',this)"><span class="aetab-icon">&#129504;</span>LOGIC ROBOTS</button>
-    </div>
-  </div>
-
-  <!-- Admin Level 2: Category sub-tabs -->
-  <div class="admin-cat-tabs-wrap">
-    <div class="admin-cat-tabs" id="adminCatTabs">
-      <button class="actab active" onclick="showAdminCat('7-9',this)">GRADE 7-9</button>
-      <button class="actab" onclick="showAdminCat('4-6',this)">GRADE 4-6</button>
-      <button class="actab" onclick="showAdminCat('1-3',this)">GRADE 1-3</button>
-      <button class="actab" onclick="showAdminCat('IM25 3-5',this)">IM25 3-5</button>
-      <button class="actab" onclick="showAdminCat('IM25 6-9',this)">IM25 6-9</button>
-    </div>
-  </div>
-
-  <div class="admin-main" id="adminMainContent">
-    <div class="loading-box"><div class="spinner" style="margin-bottom:1rem"></div>LOADING DATA...</div>
-  </div>
-</div>
-
-<footer>&copy; 2026 KOS TECHTRONICA &mdash; AUTO-REFRESHES EVERY 10 SECONDS</footer>
+</div><!-- end .wrap -->
 
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxPuvoxbTg-O2vvArnN6GbApuybaxB6_PaNa_CFQbKt-OqCOBazx_Tm21WQH8EAamOwPg/exec';
-// Grade passwords — change these as needed
-const PW_MAP={
-  '7-9':   '7-9',
-  '4-6':   '4-6',
-  '1-3':   '1-3',
-  'IM25 3-5': 'IM25-35',
-  'IM25 6-9': 'IM25-69'
-};
-let adminCat=null; // which grade this admin is locked to
-const REFRESH_SEC=10;
-const EVENTS=['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain','Logic Robots'];
-const CATS=['7-9','4-6','1-3','IM25 3-5','IM25 6-9'];
-const RACE_EVENTS=['Robo Race'];
-// Which events are available per grade
-const CAT_EVENTS={
-  '7-9':      ['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain','Logic Robots'],
-  '4-6':      ['Robo Race','Robo Kabaddi','Robo Sumo','All Terrain'],
-  '1-3':      ['Robo Race','Robo Sumo'],
-  'IM25 3-5': ['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain'],
-  'IM25 6-9': ['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain']
-};
-function eventsForCat(cat){ return CAT_EVENTS[cat]||EVENTS; }
-const ROUNDS_RACE=['QF','SF','Final'];
-const ROUNDS_STD =['R1','R2','QF','SF','Final'];
-const ROUND_LABELS={R1:'ROUND 1',R2:'ROUND 2',QF:'QUARTER FINALS',SF:'SEMI FINALS',Final:'FINAL'};
-const ROUND_CLS={R1:'r1',R2:'r2',QF:'qf',SF:'sf',Final:'fn'};
-const EV_ICONS={'Robo Race':'&#127950;','Robo Soccer':'&#9917;','Robo Kabaddi':'&#129354;','Robo Sumo':'&#129354;','All Terrain':'&#127956;','Logic Robots':'&#129504;',};
 
-let allData={};
-let activeSbEv='Robo Race', activeSbCat='7-9';
-let activeAdminEv='Robo Race', activeAdminCat='7-9';
-let activeViews={};
-EVENTS.forEach(e=>CATS.forEach(c=>activeViews[e+c]='bracket'));
-let isAdminMode=false, countdown=REFRESH_SEC, cInterval;
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzVax0MSxeueEGuscfaVvk06JdCgIXOTTCtAEcAmh35TvIl3fqNnjIlZ9QO3NNaDHmpOw/exec';
+const PW_MAP={'7-9':'7-9','4-6':'4-6','1-3':'1-3','IM25 3-5':'IM25-35','IM25 6-9':'IM25-69'};
+const CAT_EVENTS={'7-9':['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain','Logic Robots'],'4-6':['Robo Race','Robo Kabaddi','Robo Sumo','All Terrain'],'1-3':['Robo Race','Robo Sumo'],'IM25 3-5':['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain'],'IM25 6-9':['Robo Race','Robo Soccer','Robo Kabaddi','Robo Sumo','All Terrain']};
+const ROUNDS_RACE=['R32','R16','QF','SF','Final'];
+const ROUNDS_STD=['Qual','R32','R16','QF','SF','Final'];
+const RLABEL={Qual:'QUALIFIERS',R32:'ROUND OF 32',R16:'ROUND OF 16',QF:'QUARTER FINALS',SF:'SEMI FINALS',Final:'FINAL'};
+const RCLS={Qual:'qual',R32:'r32',R16:'r16',QF:'qf',SF:'sf',Final:'fn'};
 
-// Particles
-const pc=document.getElementById('particles');
-for(let i=0;i<28;i++){const p=document.createElement('div');p.className='particle';p.style.cssText='left:'+(Math.random()*100)+'%;--dur:'+(5+Math.random()*9)+'s;--delay:-'+(Math.random()*12)+'s;--drift:'+((Math.random()-0.5)*160)+'px;';pc.appendChild(p);}
+let D={},admMode=false,admCat=null,curEv='Robo Race',curCat='7-9',curView='bracket',curAdmEv='Robo Race',cd=10,tmr=null;
 
-// ── PASSWORD ──
-function openPw(){document.getElementById('pwOverlay').classList.add('show');setTimeout(()=>document.getElementById('pwInput').focus(),100);}
-function closePw(){document.getElementById('pwOverlay').classList.remove('show');document.getElementById('pwInput').value='';document.getElementById('pwErr').textContent='';}
+function gasRead(t){return fetch(SCRIPT_URL+'?type='+t+'&nc='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json();});}
+function gasWrite(p){const q=Object.entries(p).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');return fetch(SCRIPT_URL+'?'+q,{method:'GET',mode:'no-cors'}).then(()=>({status:'ok'})).catch(()=>({status:'ok'}));}
+
+function fetchScores(){
+  gasRead('scoreboard').then(j=>{
+    if(j.status==='ok'){D=j.data;document.getElementById('lastUp').textContent=j.updated||'—';renderSb();}
+    else showErr('Script error: '+(j.message||'?'));
+  }).catch(()=>showErr('Cannot connect. Deploy Apps Script with <b>Anyone</b> access + Authorize.'));
+}
+function loadAdmin(){
+  setSt('&#9899; Loading...','s');
+  gasRead('admin_get').then(j=>{
+    if(j.status==='ok'){D=j.data;document.getElementById('admLoaded').textContent='Loaded '+new Date().toLocaleTimeString('en-IN');renderAdmin();setSt('&#10003; Loaded','ok');}
+    else setSt('&#9888; '+(j.message||'Error'),'e');
+  }).catch(()=>setSt('&#9888; Cannot connect','e'));
+}
+function showErr(m){document.getElementById('sbc').innerHTML=`<div class="errbox"><h3>&#9888; ERROR</h3><p>${m}</p></div>`;}
+
+function openPw(){document.getElementById('pwov').classList.add('show');document.getElementById('pwin').focus();}
+function closePw(){document.getElementById('pwov').classList.remove('show');document.getElementById('pwin').value='';document.getElementById('pwerr').textContent='';}
 function checkPw(){
-  const val=document.getElementById('pwInput').value.trim();
-  const matched=Object.entries(PW_MAP).find(([cat,pw])=>pw===val);
-  if(matched){
-    adminCat=matched[0];
-    closePw();enterAdmin();
-  } else {
-    const i=document.getElementById('pwInput');
-    document.getElementById('pwErr').textContent='&#9888; Incorrect password';
-    i.value='';i.classList.remove('shake');void i.offsetWidth;i.classList.add('shake');i.focus();
-  }
+  const v=document.getElementById('pwin').value.trim();
+  const m=Object.entries(PW_MAP).find(([c,p])=>p===v);
+  if(m){admCat=m[0];closePw();enterAdmin();}
+  else{const i=document.getElementById('pwin');document.getElementById('pwerr').textContent='&#9888; Wrong password';i.value='';i.classList.remove('shake');void i.offsetWidth;i.classList.add('shake');i.focus();}
 }
 
-// ── MODE SWITCH ──
 function enterAdmin(){
-  isAdminMode=true;
-  document.getElementById('scoreboardMode').style.display='none';
-  document.getElementById('adminMode').style.display='block';
-  document.getElementById('liveBadge').style.display='none';
-  document.getElementById('adminLiveBadge').style.display='flex';
-  document.getElementById('btnAdmin').style.display='none';
-  document.getElementById('btnExitAdmin').style.display='flex';
-  document.getElementById('navBack').style.display='none';
-  // Lock admin to their grade only
-  activeAdminCat=adminCat;
-  // Hide all cat tabs except the admin's grade, lock it
-  document.querySelectorAll('#adminCatTabs .actab').forEach(btn=>{
-    const cat=btn.textContent.trim();
-    // match by button text starting with cat name
-    if(btn.onclick&&btn.getAttribute('onclick')&&btn.getAttribute('onclick').includes("'"+adminCat+"'")){
-      btn.classList.add('active');
-      btn.style.display='';
-    } else {
-      btn.style.display='none';
-    }
-  });
-  // Update badge to show grade
-  document.getElementById('adminLiveBadge').innerHTML='&#9881; ADMIN &nbsp;<span style="color:var(--acid);border:1px solid rgba(170,255,0,0.4);padding:0.1rem 0.4rem;font-size:0.6rem">'+adminCat+'</span>';
-  loadAdminData();
-  showToast('&#9881; Admin: Grade '+adminCat,'ok');
+  admMode=true;clearInterval(tmr);
+  $('sbMode').style.display='none';$('admMode').style.display='block';
+  $('mobnav').style.display='none';$('plive').style.display='none';
+  $('padmin').style.display='flex';$('gchip').textContent=admCat;
+  $('bopen').style.display='none';$('bexit').style.display='flex';$('cbar').style.display='none';
+  const al=CAT_EVENTS[admCat]||[];curAdmEv=al[0];
+  document.querySelectorAll('#admEvTabs .etab').forEach(b=>{b.style.display=al.includes(b.dataset.ev)?'':'none';b.classList.toggle('active',b.dataset.ev===curAdmEv);});
+  loadAdmin();toast('&#9881; Admin: Grade '+admCat,'ok');
 }
 function exitAdmin(){
-  isAdminMode=false;
-  adminCat=null;
-  document.getElementById('scoreboardMode').style.display='block';
-  document.getElementById('adminMode').style.display='none';
-  document.getElementById('liveBadge').style.display='flex';
-  document.getElementById('adminLiveBadge').style.display='none';
-  document.getElementById('btnAdmin').style.display='flex';
-  document.getElementById('btnExitAdmin').style.display='none';
-  document.getElementById('navBack').style.display='flex';
-  // restore all cat tabs
-  document.querySelectorAll('#adminCatTabs .actab').forEach(btn=>btn.style.display='');
-  document.getElementById('adminLiveBadge').innerHTML='&#9881; ADMIN';
-  showToast('&#10003; Back to scoreboard','ok');
+  admMode=false;admCat=null;
+  $('sbMode').style.display='block';$('admMode').style.display='none';
+  $('mobnav').style.display='flex';$('plive').style.display='flex';
+  $('padmin').style.display='none';$('bopen').style.display='flex';
+  $('bexit').style.display='none';$('cbar').style.display='block';
+  document.querySelectorAll('#admEvTabs .etab').forEach(b=>b.style.display='');
+  startTimer();toast('&#10003; Back to scoreboard','ok');
+}
+function admEv(ev,btn){curAdmEv=ev;document.querySelectorAll('#admEvTabs .etab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderAdmin();}
+
+function sbEv(ev,btn){curEv=ev;document.querySelectorAll('#evTabs .etab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updVbar();renderSb();}
+function sbCat(cat,btn){
+  curCat=cat;document.querySelectorAll('#catTabs .ctab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const al=CAT_EVENTS[cat]||[];if(!al.includes(curEv)){curEv=al[0];document.querySelectorAll('#evTabs .etab').forEach(b=>b.classList.toggle('active',b.dataset.ev===curEv));}
+  updEvTabs(cat);updVbar();renderSb();
+}
+function sbView(v){curView=v;updVbar();renderSb();}
+function updEvTabs(cat){const al=CAT_EVENTS[cat]||[];document.querySelectorAll('#evTabs .etab').forEach(b=>b.classList.toggle('dis',!al.includes(b.dataset.ev)));}
+function updVbar(){
+  const ir=curEv==='Robo Race';
+  $('vbq').style.display=ir?'':'none';$('mbq').style.display=ir?'flex':'none';
+  if(!ir&&curView==='qual')curView='bracket';
+  $('vbq').classList.toggle('active',curView==='qual');
+  $('vbb').classList.toggle('active',curView==='bracket');
+  $('vbw').classList.toggle('active',curView==='winner');
+  $('mbb').classList.toggle('active',curView==='bracket');
+  $('mbw').classList.toggle('active',curView==='winner');
+  $('mbq').classList.toggle('active',curView==='qual');
 }
 
-// ── CONNECTION TEST ──
-function testConnection(){
-  setStatus('<span class="saving-dot"></span> Testing...','');
-  showToast('Testing connection...','');
-  const url=SCRIPT_URL+'?type=scoreboard';
-  fetch(url,{redirect:'follow',mode:'cors',credentials:'omit'})
-    .then(r=>r.json())
-    .then(json=>{
-      if(json.status==='ok'){
-        showToast('&#10003; Connected! Data received OK','ok');
-        setStatus('&#10003; Connection OK','ok');
-      } else {
-        showToast('&#9888; Script error: '+json.message,'err');
-        setStatus('&#9888; Script error','err');
-      }
-    })
-    .catch(err=>{
-      showToast('&#9888; CORS/Network fail — trying XHR...','err');
-      const xhr=new XMLHttpRequest();
-      xhr.open('GET',url,true);
-      xhr.onload=()=>{
-        try{
-          const j=JSON.parse(xhr.responseText);
-          if(j.status==='ok'){showToast('&#10003; XHR Connected OK','ok');setStatus('&#10003; XHR OK','ok');}
-          else{showToast('&#9888; Script error: '+j.message,'err');setStatus('&#9888; Script error','err');}
-        }catch{showToast('&#9888; Invalid response — redeploy Apps Script','err');setStatus('&#9888; Bad response','err');}
-      };
-      xhr.onerror=()=>{
-        showToast('&#9888; Cannot reach script — check URL & deployment','err');
-        setStatus('&#9888; Unreachable','err');
-        alert('CONNECTION FAILED\n\nCheck:\n1. SCRIPT_URL in scoreboard.html is correct\n2. Apps Script is deployed with \'Anyone\' access\n3. You redeployed after last code change\n\nCurrent URL:\n'+SCRIPT_URL);
-      };
-      xhr.send();
-    });
-}
+function pow2(n){let p=1;while(p*2<=n)p*=2;return p;}
 
-// ── FETCH ──
-const FETCH_OPTS={redirect:'follow',mode:'cors',credentials:'omit'};
-function fetchScores(){
-  fetch(SCRIPT_URL+'?type=scoreboard',FETCH_OPTS)
-    .then(r=>r.json())
-    .then(json=>{
-      if(json.status==='ok'){
-        allData=json.data;
-        document.getElementById('lastUpdated').textContent=json.updated;
-        renderSb();
-      } else {
-        document.getElementById('sbMainContent').innerHTML=
-          '<div class="empty-box" style="margin-top:4rem"><span class="empty-icon">&#9888;</span>Script error: '+json.message+'</div>';
-      }
-    })
-    .catch(()=>{
-      // Try XHR fallback
-      const xhr=new XMLHttpRequest();
-      xhr.open('GET',SCRIPT_URL+'?type=scoreboard',true);
-      xhr.onload=()=>{
-        try{
-          const json=JSON.parse(xhr.responseText);
-          if(json.status==='ok'){allData=json.data;document.getElementById('lastUpdated').textContent=json.updated;renderSb();}
-        }catch(e){
-          document.getElementById('sbMainContent').innerHTML=
-            '<div class="empty-box" style="margin-top:4rem"><span class="empty-icon">&#9888;</span>Cannot load scores.<br><span style="font-size:0.7rem;opacity:0.6">Check SCRIPT_URL is correct and redeployed</span></div>';
-        }
-      };
-      xhr.onerror=()=>{
-        document.getElementById('sbMainContent').innerHTML=
-          '<div class="empty-box" style="margin-top:4rem"><span class="empty-icon">&#9888;</span>Cannot reach server.<br><span style="font-size:0.7rem;opacity:0.6">Check SCRIPT_URL and deployment</span></div>';
-      };
-      xhr.send();
-    });
-}
-function loadAdminData(){
-  setStatus('<span class="saving-dot"></span> Loading...','');
-  fetch(SCRIPT_URL+'?type=admin_get',FETCH_OPTS).then(r=>r.json()).then(json=>{
-    if(json.status==='ok'){allData=json.data;document.getElementById('adminLoadedAt').textContent=new Date().toLocaleTimeString('en-IN');renderAdmin();setStatus('&#10003; Loaded','ok');}
-    else setStatus('&#9888; '+json.message,'err');
-  }).catch(()=>setStatus('&#9888; Cannot connect — check SCRIPT_URL','err'));
-}
-
-// ── SCOREBOARD RENDER ──
 function renderSb(){
-  const main=document.getElementById('sbMainContent');
-  // Update event tab visibility for current cat
-  updateSbEventTabs();
-  let html='';
-  EVENTS.forEach(ev=>{
-    const isRace=RACE_EVENTS.includes(ev);
-    const aev=ev===activeSbEv?' active':'';
-    html+=`<div class="event-panel${aev}" id="sbev-${slug(ev)}">`;
-    CATS.forEach(cat=>{
-      const allowed=eventsForCat(cat).includes(ev);
-      const acat=cat===activeSbCat?' active':'';
-      const vk=ev+cat; const cv=activeViews[vk]||'bracket';
-      const evData=(allData[ev]&&allData[ev][cat])||{teams:[],matches:{},isRace};
-      html+=`<div class="cat-panel${acat}" id="sbcat-${slug(ev)}-${cat}">`;
-      if(!allowed){
-        html+=`<div class="empty-box" style="margin-top:2rem"><span class="empty-icon">&#128683;</span>THIS EVENT IS NOT AVAILABLE FOR THIS GRADE</div>`;
-      } else {
-        html+=`<div class="view-bar">
-          ${isRace?`<button class="vbtn${cv==='qual'?' active':''}" onclick="switchView('${ev}','${cat}','qual',this)">&#127950; QUALIFIER</button>`:''}
-          <button class="vbtn${cv==='bracket'?' active':''}" onclick="switchView('${ev}','${cat}','bracket',this)">&#9889; BRACKET</button>
-          <button class="vbtn${cv==='winner'?' active':''}" onclick="switchView('${ev}','${cat}','winner',this)">&#127942; WINNER</button>
-        </div>`;
-        if(isRace) html+=`<div class="view-block${cv==='qual'?' active':''}" id="vqual-${slug(ev)}-${cat}">${buildQualifier(evData)}</div>`;
-        html+=`<div class="view-block${cv==='bracket'?' active':''}" id="vbracket-${slug(ev)}-${cat}">${buildBracket(evData,isRace)}</div>`;
-        html+=`<div class="view-block${cv==='winner'?' active':''}" id="vwinner-${slug(ev)}-${cat}">${buildWinner(evData,isRace)}</div>`;
-      }
-      html+=`</div>`;
-    });
-    html+=`</div>`;
-  });
-  main.innerHTML=html;
+  const ev=curEv,cat=curCat;
+  if(!(CAT_EVENTS[cat]||[]).includes(ev)){$('sbc').innerHTML='<div class="na">&#128683; Not available for this grade</div>';return;}
+  const d=(D[ev]&&D[ev][cat])||{teams:[],matches:{},isRace:ev==='Robo Race'};
+  if(curView==='qual'&&ev==='Robo Race') $('sbc').innerHTML=buildQual(d);
+  else if(curView==='winner') $('sbc').innerHTML=buildWin(d);
+  else $('sbc').innerHTML=buildBrk(d);
 }
 
-function updateSbEventTabs(){
-  const allowed=eventsForCat(activeSbCat);
-  document.querySelectorAll('#sbEventTabs .etab').forEach(btn=>{
-    // find event name from onclick
-    const oc=btn.getAttribute('onclick')||'';
-    const m=oc.match(/'([^']+)'/);
-    if(!m) return;
-    const ev=m[1];
-    if(allowed.includes(ev)){
-      btn.style.opacity='1';btn.style.pointerEvents='';btn.style.filter='';
-    } else {
-      btn.style.opacity='0.25';btn.style.pointerEvents='none';btn.style.filter='grayscale(1)';
-      // if currently active tab is not allowed, switch to first allowed
-      if(ev===activeSbEv){
-        const firstAllowed=allowed[0];
-        activeSbEv=firstAllowed;
-        document.querySelectorAll('#sbEventTabs .etab').forEach(b=>b.classList.remove('active'));
-        document.querySelectorAll('#sbMainContent .event-panel').forEach(p=>p.classList.remove('active'));
-      }
-    }
+function buildQual(d){
+  const ts=d.teams||[];if(!ts.length)return '<div class="empty">No qualifier data yet</div>';
+  const tot=ts.length,tgt=pow2(tot),pi=(tot-tgt)*2,by=tot-pi;
+  let h=`<div class="binfo"><span>Teams: <b>${tot}</b></span><span>Target: <b>${tgt}</b></span><span>Play Quals: <b style="color:var(--orange)">${pi}</b> (${pi/2} matches)</span><span>BYE: <b style="color:var(--purple)">${by}</b></span></div>`;
+  h+=`<div style="overflow-x:auto"><table class="qtbl"><thead><tr><th>#</th><th>TEAM</th><th>TIME</th><th>STATUS</th></tr></thead><tbody>`;
+  ts.forEach((t,i)=>{
+    const r=i+1,top=r<=tgt;
+    if(r===tgt+1)h+=`<tr class="qdiv"><td colspan="4">&#9660; DID NOT QUALIFY</td></tr>`;
+    const b=t.time?(top?'<span class="bdg bq">&#10003; QUALIFIED</span>':'<span class="bdg be">&#10005; OUT</span>'):'<span class="bdg bp">PENDING</span>';
+    h+=`<tr class="qrow${top?' q':''}"><td class="rnk${top?' t':''}">${r}</td><td>${t.name}</td><td>${t.time||'—'}</td><td>${b}</td></tr>`;
   });
-  // ensure active tab is visible
-  document.querySelectorAll('#sbEventTabs .etab').forEach(btn=>{
-    const oc=btn.getAttribute('onclick')||'';const m=oc.match(/'([^']+)'/);if(!m)return;
-    if(m[1]===activeSbEv) btn.classList.add('active');
-  });
-  const ap=document.getElementById('sbev-'+slug(activeSbEv));if(ap)ap.classList.add('active');
+  h+='</tbody></table></div>';return h;
 }
 
-// ── QUALIFIER (Race only) ──
-function buildQualifier(evData){
-  const teams=evData.teams||[];
-  if(!teams.length) return empty('NO TEAMS IN SHEET YET');
-  const withTime=teams.filter(t=>t.time);
-  const noTime=teams.filter(t=>!t.time);
-  let html=`<div class="qual-wrap">
-    <div class="block-hdr race-hdr"><span style="font-size:1rem">&#127950;</span>
-      <div class="block-hdr-title">QUALIFIER — TIME RANKINGS</div>
-      <span class="block-hdr-count">${teams.length} TEAMS &nbsp;|&nbsp; TOP 8 → QF</span>
-    </div>
-    <table class="dtable"><thead><tr>
-      <th class="c">RANK</th><th>TEAM NAME</th><th class="c">TIME</th><th class="c">STATUS</th>
-    </tr></thead><tbody>`;
-  let rank=0;
-  withTime.forEach(t=>{
-    rank++;const top=rank<=8;
-    if(rank===9) html+=`<tr class="qual-divider"><td colspan="4">&#9660; DID NOT QUALIFY</td></tr>`;
-    html+=`<tr class="${top?'qual-row':''}">
-      <td class="c"><span class="rank-num ${top?'top':''}">${rank}</span></td>
-      <td><div class="t-name">${esc(t.name)}</div></td>
-      <td class="c"><span class="t-time">&#9201; ${esc(t.time)}</span></td>
-      <td class="c"><span class="qual-badge ${top?'qb-yes':'qb-no'}">${top?'&#10003; QUALIFIED':'ELIMINATED'}</span></td>
-    </tr>`;
+function buildBrk(d){
+  const rounds=d.isRace?ROUNDS_RACE:ROUNDS_STD,matches=d.matches||{};
+  const active=rounds.filter(r=>matches[r]&&Object.keys(matches[r]).length);
+  if(!active.length)return '<div class="empty">No bracket data yet</div>';
+  let h='<div class="bwrap"><div class="bracket">';
+  active.forEach(r=>{
+    const cls=RCLS[r]||'';
+    h+=`<div class="bcol"><div class="bchdr ${cls}">${RLABEL[r]||r}</div>`;
+    Object.entries(matches[r]).forEach(([mid,ts])=>{
+      const t1=ts[0]||{name:'TBD',result:''},t2=ts[1]||{name:'TBD',result:''};
+      h+=`<div class="mc"><div class="mcid">${mid}</div>`;
+      [t1,t2].forEach(t=>{const w=t.result==='WIN',l=t.result==='LOSE',by=t.result==='BYE';h+=`<div class="mct${w?' win':l?' lose':by?' bye':''}"><span class="mcn${t.name==='TBD'?' tbd':''}">${t.name}</span>${t.result?`<span class="mcr ${w?'win':l?'lose':by?'bye':''}">${t.result}</span>`:''}</div>`;});
+      h+=`</div>`;
+    });
+    h+=`</div>`;
   });
-  noTime.forEach(t=>{
-    html+=`<tr><td class="c"><span class="rank-num">—</span></td><td><div class="t-name">${esc(t.name)}</div></td><td class="c"><span class="t-time-na">NO TIME</span></td><td class="c"><span class="qual-badge qb-no">PENDING</span></td></tr>`;
-  });
-  html+=`</tbody></table></div>`;
-  return html;
+  h+='</div></div>';return h;
 }
 
-// ── BRACKET ──
-function buildBracket(evData,isRace){
-  const matchesData=evData.matches||{};
-  const roundList=isRace?ROUNDS_RACE:ROUNDS_STD;
-  const buckets={};roundList.forEach(r=>buckets[r]=[]);
-  roundList.forEach(r=>{
-    Object.entries(matchesData[r]||{}).forEach(([mid,mteams])=>{
-      const seen=new Set();
-      const uniq=mteams.filter(t=>{const k=(t.name||'').toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});
-      buckets[r].push({mid,teams:uniq});
-    });
-    buckets[r].sort((a,b)=>a.mid.localeCompare(b.mid,undefined,{numeric:true}));
-  });
-  const active=roundList.filter(r=>buckets[r]&&buckets[r].length>0);
-  if(!active.length) return empty('NO BRACKET DATA YET — ADD TEAMS TO SHEET');
-
-  const hdrCls={R1:'r1',R2:'r2',QF:'qf',SF:'sf',Final:'fn'};
-  const arrow=`<div class="arrow"><svg width="24" height="60" viewBox="0 0 24 60" fill="none"><path d="M0 30 L18 30" stroke="rgba(0,245,255,0.3)" stroke-width="1.5" stroke-dasharray="3 3"/><path d="M14 26 L20 30 L14 34" stroke="rgba(0,245,255,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
-
-  function matchCard(mid,teams){
-    let h=`<div class="bm"><div class="bm-id">${esc(mid)}</div>`;
-    for(let i=0;i<2;i++){
-      const t=teams[i];
-      if(!t){h+=`<div class="bt tbd"><span class="bt-name">TBD</span></div>`;continue;}
-      const res=(t.result||'').toUpperCase();const cls=res==='WIN'?'win':res==='LOSE'?'lose':'tbd';
-      h+=`<div class="bt ${cls}"><span class="bt-name">${esc(t.name||'?')}</span>${res?`<span class="bt-badge ${cls==='win'?'win':'lose'}">${res}</span>`:''}${isRace&&t.time?`<span class="bt-time">&#9201;${esc(t.time)}</span>`:''}</div>`;
-    }
-    return h+`</div>`;
-  }
-
-  let html=`<div class="bracket-outer"><div class="bracket-tree">`;
-  active.forEach((r,idx)=>{
-    html+=`<div class="bc"><div class="bc-hdr ${hdrCls[r]}">${ROUND_LABELS[r]}</div><div class="bc-matches">`;
-    buckets[r].forEach(({mid,teams})=>{ html+=matchCard(mid,teams); });
-    html+=`</div></div>`;
-    if(idx<active.length-1) html+=arrow;
-  });
-  // winner box
-  let winner=null,runnerUp=null;
-  (buckets['Final']||[]).forEach(({teams})=>{
-    teams.forEach(t=>{
-      const r=(t.result||'').toUpperCase();
-      if(r==='WIN') winner=t; else if(r==='LOSE') runnerUp=t;
-    });
-  });
-  // Also check evData.matches.Final directly
-  if(!winner){
-    Object.values((matchesData['Final']||{})).forEach(teams=>{
-      teams.forEach(t=>{const r=(t.result||'').toUpperCase();if(r==='WIN')winner=t;else if(r==='LOSE')runnerUp=t;});
-    });
-  }
-  html+=arrow;
-  html+=`<div class="winner-col">
-    <div class="winner-col-hdr">&#127942; RESULTS</div>
-    <div class="winner-cards">
-      <div class="winner-card wc-1">
-        <div class="wc-label">&#9670; WINNER &#9670;</div>
-        <span class="wc-medal">&#129351;</span>
-        <div class="wc-name">${winner?esc(winner.name):'<span class="wc-empty">TBD</span>'}</div>
-        ${winner&&isRace&&winner.time?`<div class="wc-time">&#9201; ${esc(winner.time)}</div>`:''}
-      </div>
-      <div class="winner-card wc-2">
-        <div class="wc-label">RUNNER-UP</div>
-        <span class="wc-medal">&#129352;</span>
-        <div class="wc-name">${runnerUp?esc(runnerUp.name):'<span class="wc-empty">TBD</span>'}</div>
-        ${runnerUp&&isRace&&runnerUp.time?`<div class="wc-time">&#9201; ${esc(runnerUp.time)}</div>`:''}
-      </div>
-    </div>
-  </div>`;
-  html+=`</div></div>`;
-  return html;
+function buildWin(d){
+  const f=d.matches&&d.matches['Final'];let w=null,ru=null;
+  Object.values(f||{}).forEach(ts=>ts.forEach(t=>{if(t.result==='WIN')w=t;else if(t.result==='LOSE')ru=t;}));
+  if(!w&&!ru)return '<div class="empty">Final not completed yet</div>';
+  let h='<div class="podium">';
+  if(w)h+=`<div class="pod gld"><div class="pmed">&#127942;</div><div class="ppl">CHAMPION</div><div class="pnm">${w.name}</div></div>`;
+  if(ru)h+=`<div class="pod slv"><div class="pmed">&#129352;</div><div class="ppl">RUNNER-UP</div><div class="pnm">${ru.name}</div></div>`;
+  h+='</div>';return h;
 }
 
-// ── WINNER VIEW ──
-function buildWinner(evData,isRace){
-  const matches=evData.matches||{};
-  let winner=null,runnerUp=null;
-  Object.values(matches['Final']||{}).forEach(mteams=>{
-    mteams.forEach(t=>{
-      const r=(t.result||'').toUpperCase();
-      if(r==='WIN') winner=t; else if(r==='LOSE') runnerUp=t;
-    });
-  });
-  if(!winner&&!runnerUp) return `<div class="empty-box" style="padding:5rem"><span class="empty-icon">&#9203;</span>FINAL NOT COMPLETED YET<br><span style="font-size:0.6rem;margin-top:0.5rem;display:block;opacity:0.5">WINNER & RUNNER-UP APPEAR AFTER THE FINAL MATCH</span></div>`;
-  return `<div style="display:flex;justify-content:center;gap:2rem;padding:3rem 1rem;flex-wrap:wrap">
-    <div class="winner-card wc-1" style="min-width:220px;max-width:280px">
-      <div class="wc-label">&#9670; WINNER &#9670;</div>
-      <span class="wc-medal" style="font-size:3.5rem">&#129351;</span>
-      <div class="wc-name" style="font-size:clamp(1rem,3vw,1.4rem);margin-top:0.5rem">${winner?esc(winner.name):'<span class="wc-empty">TBD</span>'}</div>
-      ${winner&&isRace&&winner.time?`<div class="wc-time" style="font-size:0.8rem;margin-top:0.5rem">&#9201; ${esc(winner.time)}</div>`:''}
-    </div>
-    <div class="winner-card wc-2" style="min-width:200px;max-width:260px">
-      <div class="wc-label">RUNNER-UP</div>
-      <span class="wc-medal" style="font-size:3rem">&#129352;</span>
-      <div class="wc-name" style="font-size:clamp(0.9rem,2.5vw,1.2rem);margin-top:0.5rem">${runnerUp?esc(runnerUp.name):'<span class="wc-empty">TBD</span>'}</div>
-      ${runnerUp&&isRace&&runnerUp.time?`<div class="wc-time" style="font-size:0.75rem;margin-top:0.5rem">&#9201; ${esc(runnerUp.time)}</div>`:''}
-    </div>
-  </div>`;
-}
-
-// ── ADMIN RENDER ──
 function renderAdmin(){
-  const main=document.getElementById('adminMainContent');
-  const cat=adminCat;
-  const allowedEvs=eventsForCat(cat);
-  // ensure activeAdminEv is valid
-  if(!allowedEvs.includes(activeAdminEv)) activeAdminEv=allowedEvs[0];
-  // update admin event tab visibility
-  document.querySelectorAll('#adminEventTabs .aetab').forEach(btn=>{
-    const oc=btn.getAttribute('onclick')||'';const m=oc.match(/'([^']+)'/);if(!m)return;
-    const ev=m[1];
-    if(allowedEvs.includes(ev)){btn.style.display='';btn.style.opacity='1';}
-    else{btn.style.display='none';}
-    btn.classList.toggle('active',ev===activeAdminEv);
-  });
-  let html='';
-  EVENTS.forEach(ev=>{
-    if(!allowedEvs.includes(ev)) return;
-    const isRace=RACE_EVENTS.includes(ev);
-    const aev=ev===activeAdminEv?' active':'';
-    const evData=(allData[ev]&&allData[ev][cat])||{teams:[],matches:{},isRace};
-    html+=`<div class="admin-ev-panel${aev}" id="adminev-${slug(ev)}">`;
-    html+=`<div class="admin-cat-panel active" id="admincat-${slug(ev)}-${cat}">${buildAdminPanel(ev,cat,evData,isRace)}</div>`;
-    html+=`</div>`;
-  });
-  main.innerHTML=html;
-}
-
-function buildAdminPanel(ev,cat,evData,isRace){
-  const matches=evData.matches||{};
-  const teams=evData.teams||[];
-  let html='';
-
-  // Race: qualifier time entry table
-  if(isRace&&teams.length){
-    html+=`<div class="round-section">
-      <div class="round-hdr qf"><div class="round-hdr-title">&#127950; QUALIFIER — ENTER TIMES</div><div class="round-hdr-sub">${teams.length} TEAMS</div></div>
-      <table class="admin-qual-table"><thead><tr><th>TEAM NAME</th><th class="c">TIME (mm:ss.xx)</th><th class="c">STATUS</th></tr></thead><tbody>`;
-    teams.forEach((t,idx)=>{
-      const top=idx<8&&t.time;
-      html+=`<tr class="${top?'qrow':''}">
-        <td><div class="tm-name">${esc(t.name)}</div></td>
-        <td class="c"><input class="time-input" type="text" placeholder="00:00.00" value="${esc(t.time||'')}" onchange="saveTime('${esc(ev)}','${cat}','${esc(t.name)}',this.value)"></td>
-        <td class="c"><span class="qual-badge ${top?'qb-yes':'qb-no'}">${top?'&#10003; Q':'PENDING'}</span></td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div>`;
+  const ev=curAdmEv,cat=admCat;
+  const d=(D[ev]&&D[ev][cat])||{teams:[],matches:{},isRace:ev==='Robo Race'};
+  const ir=d.isRace||ev==='Robo Race',rounds=ir?ROUNDS_RACE:ROUNDS_STD;
+  let h='';
+  if(ir){
+    const tot=(d.teams||[]).length,tgt=tot?pow2(tot):32;
+    h+=`<div class="rsec"><div class="rhdr qual">&#127950; QUALIFIER — TIME ENTRY<span class="rhr">Top ${tgt} advance to R32</span></div><div class="qigrid">`;
+    (d.teams||[]).forEach((t,i)=>{const top=i<tgt&&t.time;h+=`<div class="qi${top?' top':''}"><span class="qir${top?' t':''}">${i+1}</span><span class="qin" title="${t.name}">${t.name}</span><input class="qii" value="${t.time||''}" placeholder="mm:ss.xx" onchange="saveTime('${esc(ev)}','${cat}','${esc(t.name)}',this.value)" onblur="saveTime('${esc(ev)}','${cat}','${esc(t.name)}',this.value)"></div>`;});
+    if(!(d.teams||[]).length)h+=`<div class="empty">No teams</div>`;
+    h+=`</div></div>`;
   }
-
-  // Match cards per round
-  const rounds=isRace?ROUNDS_RACE:ROUNDS_STD;
-  let hasMatches=false;
   rounds.forEach(r=>{
-    const grp=matches[r]||{};const mids=Object.keys(grp);
-    if(!mids.length) return;
-    hasMatches=true;
-    html+=`<div class="round-section"><div class="round-hdr ${ROUND_CLS[r]}"><div class="round-hdr-title">${ROUND_LABELS[r]}</div><div class="round-hdr-sub">${mids.length} MATCH${mids.length!==1?'ES':''}</div></div><div class="matches-grid">`;
-    mids.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(mid=>{
-      const rawTeams=grp[mid];const seen=new Set();
-      const mteams=rawTeams.filter(t=>{const k=(t.name||'').toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});
-      const allDone=mteams.length>=2&&mteams.every(t=>t.result==='WIN'||t.result==='LOSE');
-      html+=`<div class="match-card${allDone?' done':''}"><div class="match-card-hdr">${mid}${allDone?' &#10003; DONE':''}</div>`;
-      mteams.forEach(t=>{
-        const res=t.result;const wc=res==='WIN'?'won':res==='LOSE'?'lost':'';
-        const ws=res==='WIN'?' selected':'';const ls=res==='LOSE'?' selected':'';
-        const dis=allDone?'disabled':'';
-        html+=`<div class="team-row ${wc}">
-          <span class="tm-name">${esc(t.name)}</span>
-          <button class="btn-win${ws}" onclick="setResult('${esc(ev)}','${cat}','${esc(t.name)}','${r}','WIN','${mid}')" ${dis}>WIN</button>
-          <button class="btn-lose${ls}" onclick="setResult('${esc(ev)}','${cat}','${esc(t.name)}','${r}','LOSE','${mid}')" ${dis}>LOSE</button>
-        </div>`;
-      });
-      html+=`</div>`;
+    const mg=((d.matches||{})[r])||{},mids=Object.keys(mg);if(!mids.length)return;
+    const cls=RCLS[r]||'',done=mids.filter(m=>mg[m].some(t=>t.result==='WIN'||t.result==='BYE')).length;
+    h+=`<div class="rsec"><div class="rhdr ${cls}">${RLABEL[r]||r}<span class="rhr">${done}/${mids.length} done</span></div><div class="mgrid">`;
+    mids.forEach(mid=>{
+      const ts=mg[mid],isDone=ts.some(t=>t.result==='WIN'||t.result==='BYE');
+      h+=`<div class="amc${isDone?' done':''}"><div class="amid">${mid}${isDone?' <span class="dtag">&#10003;</span>':''}</div>`;
+      ts.forEach(t=>{const w=t.result==='WIN',l=t.result==='LOSE',b=t.result==='BYE';h+=`<div class="amr${w?' won':l?' lost':b?' bye':''}"><span class="amn">${t.name}</span><div class="btns"><button class="bw${w?' on':''}" onclick="setRes('${esc(ev)}','${cat}','${esc(t.name)}','${r}','WIN','${mid}')" ${isDone?'disabled':''}>WIN</button><button class="bl${l?' on':''}" onclick="setRes('${esc(ev)}','${cat}','${esc(t.name)}','${r}','LOSE','${mid}')" ${isDone?'disabled':''}>LOSE</button><button class="bb${b?' on':''}" onclick="setRes('${esc(ev)}','${cat}','${esc(t.name)}','${r}','BYE','${mid}')" ${isDone?'disabled':''}>BYE</button></div></div>`;});
+      h+=`</div>`;
     });
-    html+=`</div></div>`;
+    h+=`</div></div>`;
   });
-
-  if(!isRace&&!hasMatches) return empty('NO MATCHES IN SHEET YET<br><span style="font-size:0.6rem;opacity:0.5">ADD TEAMS TO THE SHEET TAB: '+ev+' ('+cat+')</span>');
-  if(isRace&&!hasMatches&&!teams.length) return empty('NO TEAMS IN SHEET YET');
-  return html;
+  if(!h)h='<div class="empty">No data. Check sheet tab names and headers.</div>';
+  $('admc').innerHTML=h;
 }
 
-// ── SET RESULT ──
-// ── Robust fetch for Google Apps Script ──
-// READ: uses fetch with cors (works fine — scoreboard loads OK)
-// WRITE: uses no-cors fetch — GAS write goes through even without response
-function gasFetch(url, isWrite=false){
-  return new Promise((resolve)=>{
-    if(isWrite){
-      // For writes: no-cors is enough — GAS executes the write, we just can't read response
-      fetch(url,{method:'GET',redirect:'follow',mode:'no-cors'})
-        .then(()=>resolve({status:'ok'}))
-        .catch(()=>{
-          // Final fallback: inject as script tag (always fires, no CORS)
-          const s=document.createElement('script');
-          s.src=url+'&callback=gasCallback';
-          window.gasCallback=()=>{ resolve({status:'ok'}); s.remove(); };
-          s.onerror=()=>{ resolve({status:'ok'}); s.remove(); }; // GAS may not support JSONP but request still fires
-          document.head.appendChild(s);
-        });
-    } else {
-      // For reads: proper fetch
-      fetch(url,{redirect:'follow',mode:'cors',credentials:'omit'})
-        .then(r=>r.json())
-        .then(json=>resolve(json))
-        .catch(()=>resolve({status:'error',message:'Cannot connect'}));
+function setRes(ev,cat,team,round,result,mid){
+  setSt('&#9899; Saving...','s');
+  gasWrite({type:'admin_set',event:ev,cat,team,round,result}).then(()=>{
+    toast('&#10003; '+team+' → '+result,'ok');setSt('&#10003; Saved','ok');
+    const d=D[ev]&&D[ev][cat];
+    if(d){
+      (d.teams||[]).forEach(t=>{if(t.name===team)t[round+'_result']=result;});
+      const grp=((d.matches||{})[round]||{})[mid]||[];
+      grp.forEach(t=>{if(t.name!==team){const o=(result==='WIN'||result==='BYE')?'LOSE':'WIN';t.result=o;(d.teams||[]).forEach(tt=>{if(tt.name===t.name)tt[round+'_result']=o;});gasWrite({type:'admin_set',event:ev,cat,team:t.name,round,result:o});}});
+      rebuildM(ev,cat);renderAdmin();
     }
   });
 }
-
-function setResult(ev,cat,team,round,result,mid){
-  setStatus('<span class="saving-dot"></span> Saving...','');
-  const url=SCRIPT_URL+'?type=admin_set&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(team)+'&round='+encodeURIComponent(round)+'&result='+encodeURIComponent(result);
-  gasFetch(url, true).then(json=>{
-    if(!json||json.status==='ok'){
-      showToast('&#10003; '+team+' \u2192 '+result,'ok');setStatus('&#10003; Saved','ok');
-      // update local + auto-set opponent
-      const evData=allData[ev]&&allData[ev][cat];
-      if(evData){
-        evData.teams.forEach(t=>{ if(t.name===team) t[round+'_result']=result; });
-        const grp=(evData.matches[round]||{})[mid]||[];
-        grp.forEach(t=>{
-          if(t.name!==team){
-            const opp=result==='WIN'?'LOSE':'WIN';
-            t.result=opp;
-            evData.teams.forEach(tt=>{ if(tt.name===t.name) tt[round+'_result']=opp; });
-            gasFetch(SCRIPT_URL+'?type=admin_set&event='+encodeURIComponent(ev)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(t.name)+'&round='+encodeURIComponent(round)+'&result='+encodeURIComponent(opp), true).catch(()=>{});
-          }
-        });
-        rebuildMatches(ev,cat);renderAdmin();
-      }
-  }).catch(()=>{showToast('&#9888; Network error — check URL','err');setStatus('&#9888; Network error','err');});
+function saveTime(ev,cat,team,time){if(!time)return;gasWrite({type:'admin_set_time',event:ev,cat,team,time});}
+function rebuildM(ev,cat){
+  const d=D[ev]&&D[ev][cat];if(!d)return;
+  const ir=d.isRace||ev==='Robo Race',rounds=ir?ROUNDS_RACE:ROUNDS_STD,matches={};
+  rounds.forEach(r=>{const g={};(d.teams||[]).forEach(t=>{const m=t[r+'_match'];if(!m)return;if(!g[m])g[m]=[];if(!g[m].some(x=>x.name===t.name))g[m].push({name:t.name,result:t[r+'_result']||'',time:t.time||''});});matches[r]=g;});
+  d.matches=matches;
 }
 
-function saveTime(ev,cat,team,time){
-  gasFetch(SCRIPT_URL+'?type=admin_set_time&event='+encodeURIComponent(ev, true)+'&cat='+encodeURIComponent(cat)+'&team='+encodeURIComponent(team)+'&time='+encodeURIComponent(time)).catch(()=>{});
+function startTimer(){
+  clearInterval(tmr);cd=10;
+  tmr=setInterval(()=>{cd--;$('refIn').textContent=cd+'s';$('cbar').style.width=(cd/10*100)+'%';if(cd<=0){cd=10;if(!admMode)fetchScores();}},1000);
 }
+function toast(m,t){const e=$('toast');e.innerHTML=m;e.className='toast '+(t||'');e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500);}
+function setSt(m,t){const e=$('saveSt');e.innerHTML=m;e.className=t==='ok'?'sok':t==='e'?'serr':t==='s'?'ssav':'';}
+function esc(s){return String(s).replace(/'/g,"\\'");}
+function $(id){return document.getElementById(id);}
 
-function rebuildMatches(ev,cat){
-  const evData=allData[ev]&&allData[ev][cat];if(!evData) return;
-  const matches={};
-  ROUNDS.forEach(r=>{
-    const grp={};
-    (evData.teams||[]).forEach(t=>{
-      const mid=t[r+'_match'];if(!mid) return;
-      if(!grp[mid]) grp[mid]=[];
-      const dup=grp[mid].some(x=>x.name.toLowerCase()===t.name.toLowerCase());
-      if(!dup) grp[mid].push({name:t.name,result:t[r+'_result']||'',time:t.time||''});
-    });
-    matches[r]=grp;
-  });
-  evData.matches=matches;
-}
+// Particles
+(function(){const c=$('pts');for(let i=0;i<20;i++){const p=document.createElement('div');p.className='pt';p.style.cssText=`left:${Math.random()*100}%;animation-duration:${9+Math.random()*14}s;animation-delay:${Math.random()*12}s`;c.appendChild(p);}})();
 
-// ── TAB SWITCHES ──
-function showSbEvent(ev,btn){
-  activeSbEv=ev;
-  document.querySelectorAll('#sbEventTabs .etab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('#sbMainContent .event-panel').forEach(p=>p.classList.remove('active'));
-  const p=document.getElementById('sbev-'+slug(ev));if(p)p.classList.add('active');
-}
-function showSbCat(cat,btn){
-  activeSbCat=cat;
-  document.querySelectorAll('#sbCatTabs .ctab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  // ensure activeSbEv is valid for this cat
-  if(!eventsForCat(cat).includes(activeSbEv)) activeSbEv=eventsForCat(cat)[0];
-  updateSbEventTabs();
-  document.querySelectorAll('#sbMainContent .event-panel').forEach(p=>p.classList.remove('active'));
-  const evPanel=document.getElementById('sbev-'+slug(activeSbEv));if(evPanel)evPanel.classList.add('active');
-  document.querySelectorAll('#sbMainContent .event-panel.active .cat-panel').forEach(p=>p.classList.remove('active'));
-  const p=document.getElementById('sbcat-'+slug(activeSbEv)+'-'+cat);if(p)p.classList.add('active');
-}
-function showAdminEvent(ev,btn){
-  if(!eventsForCat(adminCat||'7-9').includes(ev)) return;
-  activeAdminEv=ev;
-  document.querySelectorAll('#adminEventTabs .aetab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('#adminMainContent .admin-ev-panel').forEach(p=>p.classList.remove('active'));
-  const p=document.getElementById('adminev-'+slug(ev));if(p)p.classList.add('active');
-}
-function showAdminCat(cat,btn){
-  activeAdminCat=cat;
-  document.querySelectorAll('#adminCatTabs .actab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('#adminMainContent .admin-ev-panel.active .admin-cat-panel').forEach(p=>p.classList.remove('active'));
-  const ev=activeAdminEv;const p=document.getElementById('admincat-'+slug(ev)+'-'+cat);if(p)p.classList.add('active');
-}
-function switchView(ev,cat,view,btn){
-  activeViews[ev+cat]=view;
-  const panel=document.getElementById('sbcat-'+slug(ev)+'-'+cat);if(!panel) return;
-  panel.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  panel.querySelectorAll('.view-block').forEach(b=>b.classList.remove('active'));
-  const mp={qual:'vqual-',bracket:'vbracket-',winner:'vwinner-'};
-  const el=document.getElementById(mp[view]+slug(ev)+'-'+cat);if(el)el.classList.add('active');
-}
+updEvTabs(curCat);updVbar();fetchScores();startTimer();
 
-// ── HELPERS ──
-function empty(msg){return `<div class="empty-box"><span class="empty-icon">&#128197;</span>${msg}</div>`;}
-function setStatus(msg,type){const el=document.getElementById('saveStatus');el.innerHTML=msg;el.className=type==='ok'?'status-ok':type==='err'?'status-err':'';}
-function showToast(msg,type){const t=document.getElementById('toast');t.innerHTML=msg;t.className='toast '+type+' show';setTimeout(()=>t.className='toast '+type,2500);}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
-function slug(s){return String(s||'').replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\-]/g,'');}
-
-// ── COUNTDOWN ──
-function startCountdown(){
-  countdown=REFRESH_SEC;clearInterval(cInterval);
-  const fill=document.getElementById('refreshFill');
-  fill.style.transition='none';fill.style.transform='scaleX(1)';
-  setTimeout(()=>{fill.style.transition=`transform ${REFRESH_SEC}s linear`;fill.style.transform='scaleX(0)';},50);
-  cInterval=setInterval(()=>{
-    countdown--;document.getElementById('nextRefresh').textContent=countdown+'s';
-    if(countdown<=0){if(!isAdminMode)fetchScores();startCountdown();}
-  },1000);
-}
-
-fetchScores();startCountdown();
 </script>
 </body>
 </html>
